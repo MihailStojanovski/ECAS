@@ -1,5 +1,7 @@
 package worlds;
 
+import MDP.State;
+
 public class Road {
     
     private String name;
@@ -35,5 +37,5 @@ public class Road {
     public String getType() {
         return type;
     }
-
+    
 }
