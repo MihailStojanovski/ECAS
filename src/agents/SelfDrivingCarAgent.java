@@ -1,11 +1,15 @@
 package agents;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import worlds.Road;
 import worlds.SelfDrivingCarWorld;
 
 import static java.util.Map.entry;
+
+import java.util.ArrayList;
 
 /*
 enum AccelerateActions {
@@ -93,9 +97,19 @@ public class SelfDrivingCarAgent {
     );
     
     private SelfDrivingCarWorld world;
+    private List<String> locationStates = new ArrayList<>();
+    private List<Road> roadStates = new ArrayList<>();
+
+    private void setUpVariables(SelfDrivingCarWorld world){
+        this.locationStates = world.getLocations();
+        this.roadStates = world.getRoads();
+    }
 
     public SelfDrivingCarAgent(SelfDrivingCarWorld world){
         this.world = world;
+        setUpVariables(world);
     }
+
+    
     
 }
