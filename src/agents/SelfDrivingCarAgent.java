@@ -4,6 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.RowSetMetaData;
+
+import MDP.State;
+import MDP.StateRegistry;
+import worlds.Location;
 import worlds.Road;
 import worlds.SelfDrivingCarWorld;
 
@@ -97,17 +102,79 @@ public class SelfDrivingCarAgent {
     );
     
     private SelfDrivingCarWorld world;
-    private List<String> locationStates = new ArrayList<>();
+    private List<Location> locationStates = new ArrayList<>();
     private List<Road> roadStates = new ArrayList<>();
-
-    private void setUpVariables(SelfDrivingCarWorld world){
-        this.locationStates = world.getLocations();
-        this.roadStates = world.getRoads();
-    }
+    private Map<State, StateRegistry> stateRegistry = new HashMap<State,StateRegistry>();
+    private List<String> locationActions = new ArrayList<>();
+    private List<String> roadActions = new ArrayList<>();
 
     public SelfDrivingCarAgent(SelfDrivingCarWorld world){
         this.world = world;
-        setUpVariables(world);
+        setUpVariables();
+    }
+
+    private void setUpVariables(){
+        StringBuilder builder = new StringBuilder();
+        for (State state : locationStates) {
+            stateRegistry.put(state,null);
+        }
+
+        // Adding cartesian product of speedAdjustments, pedestrianTraffic and road states
+        for (State state : roadStates) {
+            for(Map.Entry<String,Integer> speedEntry : speedAdjustments.entrySet()){
+                for(Map.Entry<String,Double> pTrafficEntry : pedestrianTraffic.entrySet()){
+                    StateRegistry tempSR = new StateRegistry(speedEntry, pTrafficEntry);    
+                    stateRegistry.put(state,tempSR);
+                }
+            }
+        }
+
+        // Making location actions
+        locationActions.add("STAY");
+        for(State state : roadStates){
+            builder.append("TURN_ONTO_");
+            builder.append(state.getName());
+            locationActions.add(builder.toString());
+            builder.setLength(0);
+        }
+
+        // Making road actions
+        roadActions.add("CRUISE");
+        for(Map.Entry<String,String> a : accelerateActions.entrySet()){
+            roadActions.add(a.getKey());
+        }
+
+    }
+
+    public Double transitionFunction(State state, String action, State successorState){
+        final StateRegistry currentStateRegistry = stateRegistry.get(state);
+        final StateRegistry successorStateRegistry = stateRegistry.get(successorState);
+
+
+        if(locationStates.contains(state)){
+            if(roadActions.contains(action) || action.equals("STAY")){
+                if(state.equals(successorState)){
+                    return 1.0;
+                }
+                return 0.0;
+            }
+
+            if(state instanceof Location && successorState instanceof Road){
+                StringBuilder builder = new StringBuilder("TURN_ONTO_");
+                builder.append(successorState.getName());
+                if(action.equals(builder.toString())){
+                    if(state.getName().equals(((Road)successorState).getFromLocation()) && successorStateRegistry.getSpeedAdjustment().getKey().equals("NONE")){
+                        return successorStateRegistry.getPedestrianTraffic().getValue();
+                    }
+                }
+
+            }
+
+        }
+        
+
+
+        return 0.0;
     }
 
     

@@ -2,7 +2,7 @@ package worlds;
 
 import MDP.State;
 
-public class Road {
+public class Road extends State{
     
     private String name;
     private String fromLocation;
@@ -11,7 +11,7 @@ public class Road {
     private String type;
 
     public Road(String name, String fromLocation, String toLocation, int length, String type){
-        this.name = name;
+        super(name);
         this.fromLocation = fromLocation;
         this.toLocation = toLocation;
         this.length = length;
