@@ -3,69 +3,16 @@ package agents;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
-import javax.sql.RowSetMetaData;
-
+import MDP.Location;
+import MDP.Road;
 import MDP.State;
 import MDP.StateRegistry;
-import worlds.Location;
-import worlds.Road;
 import worlds.SelfDrivingCarWorld;
 
 import static java.util.Map.entry;
 
-import java.util.ArrayList;
-
-/*
-enum AccelerateActions {
-    ACCELERATE_TO_LOW_SPEED("LOW"),
-    ACCELERATE_TO_NORMAL_SPEED("NORMAL"),
-    ACCELERATE_TO_HIGH_SPEED("HIGH");
-
-    private final String speed;
-    
-    AccelerateActions(String speed){
-        this.speed = speed;
-    }
-}
-
-enum SpeedAdjustments {
-    NONE(null),
-    LOW(-10),
-    NORMAL(0),
-    HIGH(10);
-
-    private final Integer adjustment;
-    
-    SpeedAdjustments(Integer adjustment){
-        this.adjustment = adjustment;
-    }
-}
-
-enum SpeedLimits {
-    CITY(25),
-    COUNTY(45),
-    HIGHWAY(75);
-
-    private final Integer limit;
-
-    SpeedLimits(Integer limit){
-        this.limit = limit;
-    }
-}
-
-enum PedestrianTraffic {
-    LIGHT(0.8),
-    HEAVY(0.2);
-
-    private final Double probability;
-
-    PedestrianTraffic(Double probability){
-        this.probability = probability;
-    }
-}
-
-*/
 /**
  * SelfDrivingCarAgent
  */
@@ -102,11 +49,13 @@ public class SelfDrivingCarAgent {
     );
     
     private SelfDrivingCarWorld world;
-    private List<Location> locationStates = new ArrayList<>();
-    private List<Road> roadStates = new ArrayList<>();
-    private Map<State, StateRegistry> stateRegistry = new HashMap<State,StateRegistry>();
+    private List<String> allStateKeys = new ArrayList<>();
+    private Map<String, StateRegistry> stateRegistryMap = new HashMap<String,StateRegistry>();
+    private List<String> locationStrings = new ArrayList<>();
+    private List<String> roadStrings = new ArrayList<>();
     private List<String> locationActions = new ArrayList<>();
     private List<String> roadActions = new ArrayList<>();
+    private List<String> allActions;
 
     public SelfDrivingCarAgent(SelfDrivingCarWorld world){
         this.world = world;
@@ -115,23 +64,29 @@ public class SelfDrivingCarAgent {
 
     private void setUpVariables(){
         StringBuilder builder = new StringBuilder();
-        for (State state : locationStates) {
-            stateRegistry.put(state,null);
+
+        for (State state : world.getLocations()) {
+            StateRegistry tempSR = new StateRegistry(state);
+            stateRegistryMap.put(tempSR.toString(),tempSR);
+            locationStrings.add(tempSR.toString());
+            allStateKeys.add(tempSR.toString());
         }
 
-        // Adding cartesian product of speedAdjustments, pedestrianTraffic and road states
-        for (State state : roadStates) {
+        // Adding cartesian product of road states, speedAdjustments, pedestrianTraffic to a unique string for each
+        for (State state : world.getRoads()) {
             for(Map.Entry<String,Integer> speedEntry : speedAdjustments.entrySet()){
                 for(Map.Entry<String,Double> pTrafficEntry : pedestrianTraffic.entrySet()){
-                    StateRegistry tempSR = new StateRegistry(speedEntry, pTrafficEntry);    
-                    stateRegistry.put(state,tempSR);
+                    StateRegistry tempSR = new StateRegistry(state, speedEntry, pTrafficEntry);
+                    stateRegistryMap.put(tempSR.toString(),tempSR);
+                    roadStrings.add(tempSR.toString());
+                    allStateKeys.add(tempSR.toString());
                 }
             }
         }
 
         // Making location actions
         locationActions.add("STAY");
-        for(State state : roadStates){
+        for(State state : world.getRoads()){
             builder.append("TURN_ONTO_");
             builder.append(state.getName());
             locationActions.add(builder.toString());
@@ -144,31 +99,66 @@ public class SelfDrivingCarAgent {
             roadActions.add(a.getKey());
         }
 
+        allActions = new ArrayList<>(locationActions);
+        allActions.addAll(roadActions);
+
     }
 
-    public Double transitionFunction(State state, String action, State successorState){
-        final StateRegistry currentStateRegistry = stateRegistry.get(state);
-        final StateRegistry successorStateRegistry = stateRegistry.get(successorState);
+    public List<String> getAllStateKeys(){
+        return allStateKeys;
+    }
+
+    public List<String> getAllActions() {
+        return allActions;
+    }
+
+    
+
+    public Double transitionFunction(String state, String action, String successorState){
+        final StateRegistry currentStateRegistry = stateRegistryMap.get(state);
+        final StateRegistry successorStateRegistry = stateRegistryMap.get(successorState);
 
 
-        if(locationStates.contains(state)){
+        // When the state is a location state
+        if(locationStrings.contains(state)){
+
+            // If the action is one of the road actions (changing speed) or action is to stay
             if(roadActions.contains(action) || action.equals("STAY")){
+
+                // If the next state is the same as the current one, meaning the agent will stay in place
                 if(state.equals(successorState)){
                     return 1.0;
                 }
                 return 0.0;
             }
 
-            if(state instanceof Location && successorState instanceof Road){
-                StringBuilder builder = new StringBuilder("TURN_ONTO_");
-                builder.append(successorState.getName());
-                if(action.equals(builder.toString())){
-                    if(state.getName().equals(((Road)successorState).getFromLocation()) && successorStateRegistry.getSpeedAdjustment().getKey().equals("NONE")){
-                        return successorStateRegistry.getPedestrianTraffic().getValue();
+            // Creating an action from the name of the successor road state
+            StringBuilder builder = new StringBuilder("TURN_ONTO_");
+            builder.append(successorState);
+
+            // If the action is turning onto the successor road state
+            if(action.equals(builder.toString())){
+                // If the current state is the road's starting location, and the speed adjustment is none, return the pedestrian traffic probability of the successor state
+                if(currentStateRegistry.getState().getName().equals(((Road)successorStateRegistry.getState()).getFromLocation()) && successorStateRegistry.getSpeedAdjustment().getKey().equals("NONE")){
+                    return successorStateRegistry.getPedestrianTraffic().getValue();
+                }
+            }
+
+
+
+            for(int i = 0; i < world.getRoads().size(); i++){
+                String name = world.getRoads().get(i).getName();
+
+                builder.setLength(0);
+                builder.append("TURN_ONTO_");
+                builder.append(name);
+                if(action.equals(builder.toString()) && !name.equals(successorStateRegistry.getState().getName())){
+                    if(state.equals(successorState) && currentStateRegistry.getState().getName().equals(world.getRoads().get(i).getFromLocation())){
+                        return 1.0;
                     }
                 }
-
             }
+            
 
         }
         
@@ -177,6 +167,6 @@ public class SelfDrivingCarAgent {
         return 0.0;
     }
 
-    
-    
+
+
 }

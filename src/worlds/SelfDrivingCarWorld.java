@@ -1,8 +1,14 @@
 package worlds;
 
 import java.util.ArrayList;
-// import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static java.util.Map.entry;
+
+import MDP.Location;
+import MDP.Road;
+import MDP.State;
 
 public class SelfDrivingCarWorld {
     
@@ -11,9 +17,6 @@ public class SelfDrivingCarWorld {
     private String startLocation;
     private String goalLocation;
     
-    //  An idea for later
-    // private HashMap<String,Double> startLocationsWithProbabilities = new HashMap<>();
-    
 
     public SelfDrivingCarWorld(List<Location> locations, List<Road> roads, String startLocation, String goalLocation){
         this.locations = locations;
@@ -21,6 +24,7 @@ public class SelfDrivingCarWorld {
         this.startLocation = startLocation;
         this.goalLocation = goalLocation;
     }
+
 
     public List<Location> getLocations() {
         return locations;
