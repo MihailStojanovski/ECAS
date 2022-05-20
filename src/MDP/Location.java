@@ -6,6 +6,7 @@ public class Location extends State{
         super(name);
     }
     
+    
     @Override
     public String toString() {
         return super.getName();
