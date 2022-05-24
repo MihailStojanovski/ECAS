@@ -4,21 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Map.entry;
+import States.Location;
+import States.Road;
+import States.State;
 
-import MDP.Location;
-import MDP.Road;
-import MDP.State;
+import static java.util.Map.entry;
 
 public class SelfDrivingCarWorld {
     
     private List<Location> locations = new ArrayList<>();
     private List<Road> roads = new ArrayList<>();
-    private String startLocation;
-    private String goalLocation;
+    private State startLocation;
+    private State goalLocation;
     
 
-    public SelfDrivingCarWorld(List<Location> locations, List<Road> roads, String startLocation, String goalLocation){
+    public SelfDrivingCarWorld(List<Location> locations, List<Road> roads, State startLocation, State goalLocation){
         this.locations = locations;
         this.roads = roads;
         this.startLocation = startLocation;
@@ -34,11 +34,11 @@ public class SelfDrivingCarWorld {
         return roads;
     }
 
-    public String getStartLocation() {
+    public State getStartLocation() {
         return startLocation;
     }
 
-    public String getGoalLocation() {
+    public State getGoalLocation() {
         return goalLocation;
     }
 }

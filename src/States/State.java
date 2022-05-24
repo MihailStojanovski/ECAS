@@ -1,4 +1,4 @@
-package MDP;
+package States;
 
 public abstract class State {
     private String name;

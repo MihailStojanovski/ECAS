@@ -1,4 +1,4 @@
-package MDP;
+package States;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,14 +38,14 @@ public class StateRegistry {
         }
         else{
             StringBuilder builder = new StringBuilder(state.getName());
-        builder.append("_");
-        builder.append(((Road)state).getType());
-        builder.append("_");
-        builder.append(speedAdjustment.getKey());
-        builder.append("_");
-        builder.append(pedestrianTraffic.getKey());
+            builder.append("_");
+            builder.append(((Road)state).getType());
+            builder.append("_");
+            builder.append(speedAdjustment.getKey());
+            builder.append("_");
+            builder.append(pedestrianTraffic.getKey());
 
-        return builder.toString();
+            return builder.toString();
         }
     }
 }

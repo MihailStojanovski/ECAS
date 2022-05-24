@@ -1,14 +1,19 @@
 package agents;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+
+import States.Location;
+import States.Road;
+import States.State;
+import States.StateRegistry;
+
 import java.util.ArrayList;
 
-import MDP.Location;
-import MDP.Road;
-import MDP.State;
-import MDP.StateRegistry;
 import worlds.SelfDrivingCarWorld;
 
 import static java.util.Map.entry;
@@ -19,10 +24,10 @@ import static java.util.Map.entry;
 public class SelfDrivingCarAgent {
 
 
-    private final Integer stayingTime = 120;
-    private final Integer turningTime = 5;
-    private final Integer accelerationRate = 2;
-    private final Integer driverErrorPenalty = 3600;
+    private final Double stayingTime = 120.;
+    private final Double turningTime = 5.;
+    private final Double accelerationRate = 2.;
+    private final Double driverErrorPenalty = 3600.;
 
     private final Map<String,String> accelerateActions = Map.ofEntries(
       entry("TO_LOW","LOW"),
@@ -31,7 +36,7 @@ public class SelfDrivingCarAgent {
     );
 
     private final Map<String,Integer> speedAdjustments = Map.ofEntries(
-      entry("NONE",null),
+      entry("NONE",-100),
       entry("LOW",-10),
       entry("NORMAL",0),
       entry("HIGH",10)  
@@ -112,6 +117,26 @@ public class SelfDrivingCarAgent {
         return allActions;
     }
 
+    public Set<String> getPossibleActionsForState(String state){
+        Set<String> possibleActions = new HashSet<>();
+        if(locationStrings.contains(state)){
+            StringBuilder builder = new StringBuilder();
+            for(String rS : roadStrings){
+                StateRegistry roadStateReg = stateRegistryMap.get(rS);
+                if(((Road)roadStateReg.getState()).getFromLocation().equals(state)){
+                    builder.append("TURN_ONTO_");
+                    builder.append(roadStateReg.getState().getName());
+                    possibleActions.add(builder.toString());
+                    builder.setLength(0);
+                }
+            }
+        }
+        if(roadStrings.contains(state)){
+            possibleActions.addAll(roadActions); 
+        }
+        return possibleActions;
+    }
+
     
 
     public Double transitionFunction(String state, String action, String successorState){
@@ -134,12 +159,12 @@ public class SelfDrivingCarAgent {
 
             // Creating an action from the name of the successor road state
             StringBuilder builder = new StringBuilder("TURN_ONTO_");
-            builder.append(successorState);
-
+            builder.append(successorStateRegistry.getState().getName());
             // If the action is turning onto the successor road state
             if(action.equals(builder.toString())){
                 // If the current state is the road's starting location, and the speed adjustment is none, return the pedestrian traffic probability of the successor state
                 if(currentStateRegistry.getState().getName().equals(((Road)successorStateRegistry.getState()).getFromLocation()) && successorStateRegistry.getSpeedAdjustment().getKey().equals("NONE")){
+                    //System.out.println(state + " , " + " , " + action + " , " + successorState + " pTraffic : " + successorStateRegistry.getPedestrianTraffic().getValue());
                     return successorStateRegistry.getPedestrianTraffic().getValue();
                 }
             }
@@ -196,22 +221,51 @@ public class SelfDrivingCarAgent {
         return 0.0;
     }
 
-    public int rewardFunction(String state, String action){
+    public Double rewardFunction(String state, String action){
 
         StateRegistry stateRegistry = stateRegistryMap.get(state);
+        StringBuilder builder = new StringBuilder();
         
-        if(world.getGoalLocation().equals(stateRegistry.getState().getName()) && action.equals("STAY")){
-            return 0;
+        if(world.getGoalLocation().getName().equals(stateRegistry.getState().getName()) && action.equals("STAY")){
+            return 0.;
         }
 
         if(locationStrings.contains(state) && action.equals("STAY")){
             return -stayingTime;
         }
 
-        
+        if(locationStrings.contains(state) && locationActions.contains(action)){
+            for(Road r : world.getRoads()){
+                builder.setLength(0);
+                builder.append("TURN_ONTO_");
+                builder.append(r.getName());
+                if(action.equals(builder.toString()) && stateRegistry.getState().getName().equals(r.getFromLocation())){
+                    return -turningTime;
+                }
+            }
+        }
 
+        if(roadStrings.contains(state) && action.equals("CRUISE") && !stateRegistry.getSpeedAdjustment().getKey().equals("NONE")){
+            Integer sLimit = this.speedLimits.get(((Road)stateRegistry.getState()).getType());
+            Double distance = ((Road)stateRegistry.getState()).getLength();
+            return -3600 * distance/sLimit;
+        }
+
+        if(roadStrings.contains(state) && accelerateActions.containsKey(action) && stateRegistry.getSpeedAdjustment().getKey().equals("NONE")){
+            Integer speed = speedLimits.get(((Road)stateRegistry.getState()).getType()) + speedAdjustments.get(accelerateActions.get(action));
+            return -accelerationRate * speed/10;
+        }
 
         return -driverErrorPenalty;
     }
+
+    public State startState(){
+        return world.getStartLocation();
+    }
+
+    public StateRegistry getStateRegistry(String s){
+        return stateRegistryMap.get(s);
+    }
+
 
 }
