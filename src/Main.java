@@ -50,16 +50,26 @@ public class Main {
 
         List<String> locationStrings = new ArrayList<>(Arrays.asList("HOME","TRAIN_STATION","PIZZA_PLACE","COLLEGE","GAS_STATION"));
 
+
+        //for(String str : agent.getAllStateKeys()){
+        //    System.out.println(str);
+        //}
+
+
         // Get Possible Actions for given state check
-        // Set<String> possibleActions = new HashSet<>();
-        // possibleActions.addAll(agent.getPossibleActionsForState("TRAIN_STATION"));
-        // System.out.println(possibleActions);
+        Set<String> possibleActions = new HashSet<>();
+        possibleActions.addAll(agent.getPossibleActionsForState("MERRICK_ROAD_NORTH_COUNTY_LOW_HEAVY"));
+        System.out.println("MERRICK_ROAD_NORTH_COUNTY_LOW_HEAVY possible actions : " + possibleActions);
+        possibleActions.clear();
+
+        possibleActions.addAll(agent.getPossibleActionsForState("TRAIN_STATION"));
+        System.out.println("TRAIN_STATION possible actions : " + possibleActions);
+        possibleActions.clear();
+
+        possibleActions.addAll(agent.getPossibleActionsForState("MERRICK_ROAD_NORTH_COUNTY_NONE_HEAVY"));
+        System.out.println("MERRICK_ROAD_NORTH_COUNTY_NONE_HEAVY possible actions" + possibleActions);
+        possibleActions.clear();
         
-
-        // for(String str : agent.getAllStateKeys()){
-        //     System.out.println(str);
-        // }
-
 
 
         // for(String str : agent.getAllActions()){

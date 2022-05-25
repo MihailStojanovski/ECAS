@@ -130,9 +130,17 @@ public class SelfDrivingCarAgent {
                     builder.setLength(0);
                 }
             }
+            possibleActions.add("STAY");
         }
         if(roadStrings.contains(state)){
-            possibleActions.addAll(roadActions); 
+            // Needs changing
+            if(stateRegistryMap.get(state).getSpeedAdjustment().getKey().equals("NONE")){
+                for(Map.Entry<String, String> a : accelerateActions.entrySet())
+                possibleActions.add(a.getKey()); 
+            }
+            else{
+                possibleActions.add("CRUISE");
+            }
         }
         return possibleActions;
     }
