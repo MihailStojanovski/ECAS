@@ -67,6 +67,7 @@ public class SelfDrivingCarAgent {
         setUpVariables();
     }
 
+
     private void setUpVariables(){
         StringBuilder builder = new StringBuilder();
 
@@ -81,7 +82,7 @@ public class SelfDrivingCarAgent {
         for (State state : world.getRoads()) {
             for(Map.Entry<String,Integer> speedEntry : speedAdjustments.entrySet()){
                 for(Map.Entry<String,Double> pTrafficEntry : pedestrianTraffic.entrySet()){
-                    StateRegistry tempSR = new StateRegistry(state, speedEntry, pTrafficEntry);
+                    StateRegistry tempSR = new StateRegistry(state, speedEntry.getKey(), pTrafficEntry);
                     stateRegistryMap.put(tempSR.toString(),tempSR);
                     roadStrings.add(tempSR.toString());
                     allStateKeys.add(tempSR.toString());
@@ -107,7 +108,7 @@ public class SelfDrivingCarAgent {
         allActions = new ArrayList<>(locationActions);
         allActions.addAll(roadActions);
 
-    }
+    }// End Set up variables
 
     public List<String> getAllStateKeys(){
         return allStateKeys;
@@ -117,6 +118,7 @@ public class SelfDrivingCarAgent {
         return allActions;
     }
 
+    // Returns all possible actions from the given state
     public Set<String> getPossibleActionsForState(String state){
         Set<String> possibleActions = new HashSet<>();
         if(locationStrings.contains(state)){
@@ -133,8 +135,7 @@ public class SelfDrivingCarAgent {
             possibleActions.add("STAY");
         }
         if(roadStrings.contains(state)){
-            // Needs changing
-            if(stateRegistryMap.get(state).getSpeedAdjustment().getKey().equals("NONE")){
+            if(stateRegistryMap.get(state).getSpeedAdjustment().equals("NONE")){
                 for(Map.Entry<String, String> a : accelerateActions.entrySet())
                 possibleActions.add(a.getKey()); 
             }
@@ -145,9 +146,45 @@ public class SelfDrivingCarAgent {
         return possibleActions;
     }
 
+    public Set<String> getPossibleResultingStates(String state, String action){
+        Set<String> possibleResultStates = new HashSet<>();
+        StringBuilder builder = new StringBuilder();
+        // If the state is a location state check if the action is a turn onto action
+        if(locationStrings.contains(state)){
+            for(String roadKey : roadStrings){
+                StateRegistry roadReg = stateRegistryMap.get(roadKey);
+                if(((Road)roadReg.getState()).getFromLocation().equals(state)){
+                    if(roadReg.getSpeedAdjustment().equals("NONE")){
+                        builder.append("TURN_ONTO_");
+                        builder.append(roadReg.getState().getName());
+                        if(action.equals(builder.toString())){
+                            possibleResultStates.add(roadKey);
+                        }
+                        builder.setLength(0);
+                    }
+                }  
+            }
+        }else if(roadStrings.contains(state)){
+            StateRegistry roadReg = stateRegistryMap.get(state);
+            if(roadReg.getSpeedAdjustment().equals("NONE")){
+                if(accelerateActions.keySet().contains(action)){
+                    StateRegistry tempReg = new StateRegistry(roadReg.getState(),accelerateActions.get(action),roadReg.getPedestrianTraffic());
+                    possibleResultStates.add(tempReg.toString());
+                }
+            }else if(roadReg.getSpeedAdjustment().equals("LOW") || roadReg.getSpeedAdjustment().equals("NORMAL") || roadReg.getSpeedAdjustment().equals("HIGH")){
+                if(action.equals("CRUISE")){
+                    possibleResultStates.add(((Road)roadReg.getState()).getToLocation());
+                }
+            }
+        }
+        return possibleResultStates;
+    }
+
     
 
-    public Double transitionFunction(String state, String action, String successorState){
+
+    // OLD TRANSITION FUNCTION
+    /*public Double transitionFunction(String state, String action, String successorState){
         StateRegistry currentStateRegistry = stateRegistryMap.get(state);
         StateRegistry successorStateRegistry = stateRegistryMap.get(successorState);
 
@@ -227,7 +264,7 @@ public class SelfDrivingCarAgent {
         }// End of road states
         
         return 0.0;
-    }
+    }*/
 
     public Double rewardFunction(String state, String action){
 
@@ -253,13 +290,13 @@ public class SelfDrivingCarAgent {
             }
         }
 
-        if(roadStrings.contains(state) && action.equals("CRUISE") && !stateRegistry.getSpeedAdjustment().getKey().equals("NONE")){
+        if(roadStrings.contains(state) && action.equals("CRUISE") && !stateRegistry.getSpeedAdjustment().equals("NONE")){
             Integer sLimit = this.speedLimits.get(((Road)stateRegistry.getState()).getType());
             Double distance = ((Road)stateRegistry.getState()).getLength();
             return -3600 * distance/sLimit;
         }
 
-        if(roadStrings.contains(state) && accelerateActions.containsKey(action) && stateRegistry.getSpeedAdjustment().getKey().equals("NONE")){
+        if(roadStrings.contains(state) && accelerateActions.containsKey(action) && stateRegistry.getSpeedAdjustment().equals("NONE")){
             Integer speed = speedLimits.get(((Road)stateRegistry.getState()).getType()) + speedAdjustments.get(accelerateActions.get(action));
             return -accelerationRate * speed/10;
         }

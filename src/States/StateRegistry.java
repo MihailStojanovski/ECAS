@@ -6,14 +6,14 @@ import java.util.Map.Entry;
 public class StateRegistry {
     
     private State state;
-    private Map.Entry<String,Integer> speedAdjustment;
+    private String speedAdjustment;
     private Map.Entry<String,Double> pedestrianTraffic;
 
     public StateRegistry(State state){
         this.state = state;
     }
 
-    public StateRegistry(State state, Map.Entry<String,Integer> speedAdjustments, Map.Entry<String,Double> pedestrianTraffic){
+    public StateRegistry(State state, String speedAdjustments, Map.Entry<String,Double> pedestrianTraffic){
         this.state = state;
         this.speedAdjustment   = speedAdjustments;
         this.pedestrianTraffic  = pedestrianTraffic;
@@ -27,7 +27,7 @@ public class StateRegistry {
         return pedestrianTraffic;
     }
 
-    public Entry<String, Integer> getSpeedAdjustment() {
+    public String getSpeedAdjustment() {
         return speedAdjustment;
     }
 
@@ -41,7 +41,7 @@ public class StateRegistry {
             builder.append("_");
             builder.append(((Road)state).getType());
             builder.append("_");
-            builder.append(speedAdjustment.getKey());
+            builder.append(speedAdjustment);
             builder.append("_");
             builder.append(pedestrianTraffic.getKey());
 

@@ -57,27 +57,38 @@ public class Main {
 
 
         // Get Possible Actions for given state check
+
         Set<String> possibleActions = new HashSet<>();
-        possibleActions.addAll(agent.getPossibleActionsForState("MERRICK_ROAD_NORTH_COUNTY_LOW_HEAVY"));
-        System.out.println("MERRICK_ROAD_NORTH_COUNTY_LOW_HEAVY possible actions : " + possibleActions);
-        possibleActions.clear();
+        // possibleActions.addAll(agent.getPossibleActionsForState("MERRICK_ROAD_NORTH_COUNTY_LOW_HEAVY"));
+        // System.out.println("MERRICK_ROAD_NORTH_COUNTY_LOW_HEAVY possible actions : " + possibleActions);
+        // possibleActions.clear();
 
         possibleActions.addAll(agent.getPossibleActionsForState("TRAIN_STATION"));
         System.out.println("TRAIN_STATION possible actions : " + possibleActions);
         possibleActions.clear();
 
-        possibleActions.addAll(agent.getPossibleActionsForState("MERRICK_ROAD_NORTH_COUNTY_NONE_HEAVY"));
-        System.out.println("MERRICK_ROAD_NORTH_COUNTY_NONE_HEAVY possible actions" + possibleActions);
-        possibleActions.clear();
+        // possibleActions.addAll(agent.getPossibleActionsForState("MERRICK_ROAD_NORTH_COUNTY_NONE_HEAVY"));
+        // System.out.println("MERRICK_ROAD_NORTH_COUNTY_NONE_HEAVY possible actions" + possibleActions);
+        // possibleActions.clear();
         
+        
+        // Get possible resulting states from state-action pair
+            // Needs further testing
+        Set<String> possibleResultingStates = new HashSet<>();
+        possibleResultingStates.addAll(agent.getPossibleResultingStates("TRAIN_STATION","TURN_ONTO_GRAY_STREET_SOUTH"));
+        System.out.println("Resulting states for state : \"TRAIN_STATION\" and action : \"TURN_ONTO_GRAY_STREET_SOUTH\" : "+possibleResultingStates);
 
+        possibleResultingStates.clear();
+        possibleResultingStates.addAll(agent.getPossibleResultingStates("GRAY_STREET_NORTH_CITY_NONE_HEAVY", "TO_HIGH"));
+        System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_NONE_HEAVY\" and action : \"TO_HIGH\" : "+possibleResultingStates);
 
-        // for(String str : agent.getAllActions()){
-        //     System.out.println(str);
-        // }
+        possibleResultingStates.clear();
+        possibleResultingStates.addAll(agent.getPossibleResultingStates("GRAY_STREET_NORTH_CITY_HIGH_HEAVY", "CRUISE"));
+        System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_NONE_HEAVY\" and action : \"TO_HIGH\" : "+possibleResultingStates);
 
 
         // Transition Function
+
         // for(String currState : agent.getAllStateKeys()){
         //     for(String action : agent.getAllActions()){
         //         for(String nextState : agent.getAllStateKeys()){
@@ -91,6 +102,7 @@ public class Main {
 
 
         // Reward function
+
         // for(String stateR : agent.getAllStateKeys()){
         //     for(String actionR : agent.getAllActions()){
         //             Double reward = agent.rewardFunction(stateR, actionR);
@@ -105,16 +117,5 @@ public class Main {
 
 
     }
-
-    // public Map<String,Double> updatingFunction(Map<String,Double> values,SelfDrivingCarAgent agent){
-    //     Map<String,Double> vToReturn = new HashMap<>();
-    //     Iterable<String> states = agent.getAllStateKeys();
-
-    //     for(String state : states){
-    //         Iterable<String> actions = agent.getPossibleActionsForState(state){
-
-    //         }
-    //     }
-    // }
 
 }
