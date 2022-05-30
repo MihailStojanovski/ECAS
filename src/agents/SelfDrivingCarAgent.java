@@ -118,7 +118,15 @@ public class SelfDrivingCarAgent {
         return allActions;
     }
 
-    // Returns all possible actions from the given state
+
+/**
+ * The getPossibleActionsForState function returns a set of possible actions for the given state.
+ *
+ * 
+ * @param state Used to Determine the possible actions for a given state.
+ * @return A set of possible actions for a given state.
+ * 
+ */
     public Set<String> getPossibleActionsForState(String state){
         Set<String> possibleActions = new HashSet<>();
         if(locationStrings.contains(state)){
@@ -146,24 +154,38 @@ public class SelfDrivingCarAgent {
         return possibleActions;
     }
 
+/**
+ * The getPossibleResultingStates function returns a set of possible resulting states from the given state and action.
+ *
+ * 
+ * @param state The state in which the action is chosen.
+ * @param action The action.
+ * @return A set of possible resulting states given a state and an action.
+ * 
+ */
     public Set<String> getPossibleResultingStates(String state, String action){
         Set<String> possibleResultStates = new HashSet<>();
         StringBuilder builder = new StringBuilder();
         // If the state is a location state check if the action is a turn onto action
         if(locationStrings.contains(state)){
-            for(String roadKey : roadStrings){
-                StateRegistry roadReg = stateRegistryMap.get(roadKey);
-                if(((Road)roadReg.getState()).getFromLocation().equals(state)){
-                    if(roadReg.getSpeedAdjustment().equals("NONE")){
-                        builder.append("TURN_ONTO_");
-                        builder.append(roadReg.getState().getName());
-                        if(action.equals(builder.toString())){
-                            possibleResultStates.add(roadKey);
+            if(action.equals("STAY")){
+                possibleResultStates.add(state);
+            }else{
+                for(String roadKey : roadStrings){
+                    StateRegistry roadReg = stateRegistryMap.get(roadKey);
+                    if(((Road)roadReg.getState()).getFromLocation().equals(state)){
+                        if(roadReg.getSpeedAdjustment().equals("NONE")){
+                            builder.append("TURN_ONTO_");
+                            builder.append(roadReg.getState().getName());
+                            if(action.equals(builder.toString())){
+                                possibleResultStates.add(roadKey);
+                            }
+                            builder.setLength(0);
                         }
-                        builder.setLength(0);
-                    }
-                }  
+                    }  
+                }
             }
+            
         }else if(roadStrings.contains(state)){
             StateRegistry roadReg = stateRegistryMap.get(state);
             if(roadReg.getSpeedAdjustment().equals("NONE")){
@@ -180,6 +202,21 @@ public class SelfDrivingCarAgent {
         return possibleResultStates;
     }
 
+    public Double transitionFunction(String state, String action, String successorState){
+
+        /*
+
+        4 types of transitions:
+
+        t(loc,turn_onto,road_NONE) = 0.8(Light) || 0.2(Heavy)
+        t(loc,stay,loc) = 1.0
+        t(road_NONE,to_speed,road_Speed) = 1.0
+        t(road_speed,cruise,loc) = 1.0
+
+        */
+
+        return 0.0;
+    }
     
 
 
@@ -311,6 +348,5 @@ public class SelfDrivingCarAgent {
     public StateRegistry getStateRegistry(String s){
         return stateRegistryMap.get(s);
     }
-
 
 }
