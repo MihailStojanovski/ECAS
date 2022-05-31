@@ -82,7 +82,7 @@ public class SelfDrivingCarAgent {
         for (State state : world.getRoads()) {
             for(Map.Entry<String,Integer> speedEntry : speedAdjustments.entrySet()){
                 for(Map.Entry<String,Double> pTrafficEntry : pedestrianTraffic.entrySet()){
-                    StateRegistry tempSR = new StateRegistry(state, speedEntry.getKey(), pTrafficEntry);
+                    StateRegistry tempSR = new StateRegistry(state, speedEntry.getKey(), pTrafficEntry.getKey());
                     stateRegistryMap.put(tempSR.toString(),tempSR);
                     roadStrings.add(tempSR.toString());
                     allStateKeys.add(tempSR.toString());
@@ -202,19 +202,50 @@ public class SelfDrivingCarAgent {
         return possibleResultStates;
     }
 
-    public Double transitionFunction(String state, String action, String successorState){
+
+    public Double transitionFunction(String currentState, String action, String successorState){
 
         /*
 
         4 types of transitions:
 
-        t(loc,turn_onto,road_NONE) = 0.8(Light) || 0.2(Heavy)
-        t(loc,stay,loc) = 1.0
-        t(road_NONE,to_speed,road_Speed) = 1.0
-        t(road_speed,cruise,loc) = 1.0
+        ++++    t(loc,stay,loc) = 1.0   
+        ++++    t(loc,turn_onto,road_NONE) = 0.8(Light) || 0.2(Heavy)
+
+        ++++    t(road_NONE,to_speed,road_Speed) = 1.0
+        ++++    t(road_speed,cruise,loc) = 1.0
 
         */
+        StateRegistry currentStateRegistry = stateRegistryMap.get(currentState);
+        StateRegistry successorStateRegistry = stateRegistryMap.get(successorState);
 
+        if(locationStrings.contains(currentState)){
+            if(action.equals("STAY")){
+                if(successorState.equals(currentState)){
+                    return 1.0;
+                }
+            }
+            else if(locationActions.contains(action) && !action.equals("STAY") ){
+                if(roadStrings.contains(successorState)){
+                    if(successorStateRegistry.getSpeedAdjustment().equals("NONE")){
+                        return pedestrianTraffic.get(successorStateRegistry.getPedestrianTraffic());
+                    }
+                }
+            }
+        }
+
+        if(roadStrings.contains(currentState)){
+            if(roadStrings.contains(successorState) && accelerateActions.containsKey(action)){
+                if(currentStateRegistry.getSpeedAdjustment().equals("NONE") && !successorStateRegistry.getSpeedAdjustment().equals("NONE")){
+                    return 1.0;
+                }
+            }
+            if(roadStrings.contains(successorState) && action.equals("CRUISE")){
+                if(!successorStateRegistry.getSpeedAdjustment().equals("NONE")){
+                    return 1.0;
+                }
+            }
+        }
         return 0.0;
     }
     

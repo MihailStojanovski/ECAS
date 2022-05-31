@@ -7,13 +7,13 @@ public class StateRegistry {
     
     private State state;
     private String speedAdjustment;
-    private Map.Entry<String,Double> pedestrianTraffic;
+    private String pedestrianTraffic;
 
     public StateRegistry(State state){
         this.state = state;
     }
 
-    public StateRegistry(State state, String speedAdjustments, Map.Entry<String,Double> pedestrianTraffic){
+    public StateRegistry(State state, String speedAdjustments, String pedestrianTraffic){
         this.state = state;
         this.speedAdjustment   = speedAdjustments;
         this.pedestrianTraffic  = pedestrianTraffic;
@@ -23,7 +23,7 @@ public class StateRegistry {
         return state;
     }
 
-    public Entry<String, Double> getPedestrianTraffic() {
+    public String getPedestrianTraffic() {
         return pedestrianTraffic;
     }
 
@@ -43,7 +43,7 @@ public class StateRegistry {
             builder.append("_");
             builder.append(speedAdjustment);
             builder.append("_");
-            builder.append(pedestrianTraffic.getKey());
+            builder.append(pedestrianTraffic);
 
             return builder.toString();
         }

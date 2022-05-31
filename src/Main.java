@@ -84,7 +84,7 @@ public class Main {
 
         possibleResultingStates.clear();
         possibleResultingStates.addAll(agent.getPossibleResultingStates("GRAY_STREET_NORTH_CITY_HIGH_HEAVY", "CRUISE"));
-        System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_NONE_HEAVY\" and action : \"TO_HIGH\" : "+possibleResultingStates);
+        System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_HIGH_HEAVY\" and action : \"CRUISE\" : "+possibleResultingStates);
 
 
         // Transition Function
