@@ -240,8 +240,8 @@ public class SelfDrivingCarAgent {
                     return 1.0;
                 }
             }
-            if(roadStrings.contains(successorState) && action.equals("CRUISE")){
-                if(!successorStateRegistry.getSpeedAdjustment().equals("NONE")){
+            if(locationStrings.contains(successorState) && action.equals("CRUISE")){
+                if(!currentStateRegistry.getSpeedAdjustment().equals("NONE")){
                     return 1.0;
                 }
             }

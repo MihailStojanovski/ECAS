@@ -73,32 +73,29 @@ public class Main {
         
         
         // Get possible resulting states from state-action pair
-            // Needs further testing
-        Set<String> possibleResultingStates = new HashSet<>();
-        possibleResultingStates.addAll(agent.getPossibleResultingStates("TRAIN_STATION","TURN_ONTO_GRAY_STREET_SOUTH"));
-        System.out.println("Resulting states for state : \"TRAIN_STATION\" and action : \"TURN_ONTO_GRAY_STREET_SOUTH\" : "+possibleResultingStates);
+        // Set<String> possibleResultingStates = new HashSet<>();
+        // possibleResultingStates.addAll(agent.getPossibleResultingStates("TRAIN_STATION","TURN_ONTO_GRAY_STREET_SOUTH"));
+        // System.out.println("Resulting states for state : \"TRAIN_STATION\" and action : \"TURN_ONTO_GRAY_STREET_SOUTH\" : "+possibleResultingStates);
 
-        possibleResultingStates.clear();
-        possibleResultingStates.addAll(agent.getPossibleResultingStates("GRAY_STREET_NORTH_CITY_NONE_HEAVY", "TO_HIGH"));
-        System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_NONE_HEAVY\" and action : \"TO_HIGH\" : "+possibleResultingStates);
+        // possibleResultingStates.clear();
+        // possibleResultingStates.addAll(agent.getPossibleResultingStates("GRAY_STREET_NORTH_CITY_NONE_HEAVY", "TO_HIGH"));
+        // System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_NONE_HEAVY\" and action : \"TO_HIGH\" : "+possibleResultingStates);
 
-        possibleResultingStates.clear();
-        possibleResultingStates.addAll(agent.getPossibleResultingStates("GRAY_STREET_NORTH_CITY_HIGH_HEAVY", "CRUISE"));
-        System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_HIGH_HEAVY\" and action : \"CRUISE\" : "+possibleResultingStates);
+        // possibleResultingStates.clear();
+        // possibleResultingStates.addAll(agent.getPossibleResultingStates("GRAY_STREET_NORTH_CITY_HIGH_HEAVY", "CRUISE"));
+        // System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_HIGH_HEAVY\" and action : \"CRUISE\" : "+possibleResultingStates);
 
 
         // Transition Function
 
-        // for(String currState : agent.getAllStateKeys()){
-        //     for(String action : agent.getAllActions()){
-        //         for(String nextState : agent.getAllStateKeys()){
-        //             Double transitionProbability = agent.transitionFunction(currState, action, nextState);
-        //             if(transitionProbability == 1){
-        //                 System.out.println("Transition for : (" + currState + " , " + action + " , " + nextState + ") =  " + transitionProbability);
-        //             }
-        //         }
-        //     }
-        // }
+        for(String currState : agent.getAllStateKeys()){
+            for(String action : agent.getPossibleActionsForState(currState)){
+                for(String nextState : agent.getPossibleResultingStates(currState, action)){
+                    Double transitionProbability = agent.transitionFunction(currState, action, nextState);
+                        System.out.println("Transition for : (" + currState + " , " + action + " , " + nextState + ") =  " + transitionProbability);
+                }
+            }
+        }
 
 
         // Reward function
