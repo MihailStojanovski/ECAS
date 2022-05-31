@@ -9,9 +9,9 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.function.DoubleBinaryOperator;
 
-import States.Location;
-import States.Road;
-import States.State;
+import states.Location;
+import states.Road;
+import states.State;
 import agents.SelfDrivingCarAgent;
 import worlds.SelfDrivingCarWorld;
 

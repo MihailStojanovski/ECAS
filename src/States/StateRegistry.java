@@ -1,4 +1,4 @@
-package States;
+package states;
 
 import java.util.Map;
 import java.util.Map.Entry;

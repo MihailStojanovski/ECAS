@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import States.Location;
-import States.Road;
-import States.State;
+import states.Location;
+import states.Road;
+import states.State;
 
 import static java.util.Map.entry;
 

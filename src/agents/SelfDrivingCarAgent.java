@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import States.Location;
-import States.Road;
-import States.State;
-import States.StateRegistry;
+import states.Location;
+import states.Road;
+import states.State;
+import states.StateRegistry;
 
 import java.util.ArrayList;
 
@@ -249,90 +249,6 @@ public class SelfDrivingCarAgent {
         return 0.0;
     }
     
-
-
-    // OLD TRANSITION FUNCTION
-    /*public Double transitionFunction(String state, String action, String successorState){
-        StateRegistry currentStateRegistry = stateRegistryMap.get(state);
-        StateRegistry successorStateRegistry = stateRegistryMap.get(successorState);
-
-
-        // If the state is a location state
-        if(locationStrings.contains(state)){
-
-            // If the action is one of the road actions (changing speed) or action is to stay
-            if(roadActions.contains(action) || action.equals("STAY")){
-
-                // If the next state is the same as the current one, meaning the agent will stay in place
-                if(state.equals(successorState)){
-                    return 1.0;
-                }
-                return 0.0;
-            }
-
-            // Creating an action from the name of the successor road state
-            StringBuilder builder = new StringBuilder("TURN_ONTO_");
-            builder.append(successorStateRegistry.getState().getName());
-            // If the action is turning onto the successor road state
-            if(action.equals(builder.toString())){
-                // If the current state is the road's starting location, and the speed adjustment is none, return the pedestrian traffic probability of the successor state
-                if(currentStateRegistry.getState().getName().equals(((Road)successorStateRegistry.getState()).getFromLocation()) && successorStateRegistry.getSpeedAdjustment().getKey().equals("NONE")){
-                    //System.out.println(state + " , " + " , " + action + " , " + successorState + " pTraffic : " + successorStateRegistry.getPedestrianTraffic().getValue());
-                    return successorStateRegistry.getPedestrianTraffic().getValue();
-                }
-            }
-
-
-
-            for(int i = 0; i < world.getRoads().size(); i++){
-                String name = world.getRoads().get(i).getName();
-
-                builder.setLength(0);
-                builder.append("TURN_ONTO_");
-                builder.append(name);
-                if(action.equals(builder.toString()) && !name.equals(successorStateRegistry.getState().getName())){
-                    if(state.equals(successorState) && currentStateRegistry.getState().getName().equals(world.getRoads().get(i).getFromLocation())){
-                        return 1.0;
-                    }
-                }
-            }
-        }// End of location states
-        
-        // If the state is a road state
-        if(roadStrings.contains(state)){
-            if(locationActions.contains(action)){
-                if(state.equals(successorState)){
-                    return 1.0;
-                }
-                return 0.0;
-            }
-
-            if(accelerateActions.containsKey(action)){
-                if( currentStateRegistry.getSpeedAdjustment().getKey().equals("NONE") && 
-                    currentStateRegistry.getState().getName().equals(successorStateRegistry.getState().getName()) && 
-                    currentStateRegistry.getPedestrianTraffic().getKey().equals(successorStateRegistry.getPedestrianTraffic().getKey()) &&
-                    successorStateRegistry.getSpeedAdjustment().getKey().equals(accelerateActions.get(action))){
-                        return 1.0;
-                }
-                if(!currentStateRegistry.getSpeedAdjustment().getKey().equals("NONE") && state.equals(successorState)){
-                        return 1.0;
-                    }
-            }
-
-            if(action.equals("CRUISE")){
-                if(currentStateRegistry.getSpeedAdjustment().getKey().equals("NONE") &&
-                    state.equals(successorState)){
-                        return 1.0;
-                    }
-                if(!currentStateRegistry.getSpeedAdjustment().getKey().equals("NONE") && 
-                successorState.equals(((Road)currentStateRegistry.getState()).getToLocation())){
-                    return 1.0;
-                }
-            }
-        }// End of road states
-        
-        return 0.0;
-    }*/
 
     public Double rewardFunction(String state, String action){
 
