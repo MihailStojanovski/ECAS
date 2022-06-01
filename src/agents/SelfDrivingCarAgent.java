@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import rewards.EthicalReward;
+import rewards.EthicalRewardQuad;
+import rewards.Reward;
 import states.Location;
 import states.Road;
 import states.State;
@@ -248,8 +251,25 @@ public class SelfDrivingCarAgent {
         }
         return 0.0;
     }
+
+
+    public Double rewardFunction(String state, String action, String successorState, Reward r){
+        
+        return 0.0;
+    }
+
+    public Double rewardFunction(String state, String action, String successorState, Reward r, Double epsilon, Double epsilonP, boolean isGood){
+            EthicalRewardQuad quad = r.getEthicalReward(state, action, successorState);
+            if(isGood){
+                return quad.getTriangle() - quad.getTriangleBarre() - epsilonP * quad.getTriangleBarre();
+            } 
+            else{
+                return quad.getNabla() - quad.getNablaBarre() + epsilon * quad.getNablaBarre();
+            }
+    }
     
 
+    /* OLD Reward function
     public Double rewardFunction(String state, String action){
 
         StateRegistry stateRegistry = stateRegistryMap.get(state);
@@ -287,6 +307,9 @@ public class SelfDrivingCarAgent {
 
         return -driverErrorPenalty;
     }
+    */
+
+    
 
     public State startState(){
         return world.getStartLocation();

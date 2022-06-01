@@ -13,6 +13,10 @@ import states.Location;
 import states.Road;
 import states.State;
 import agents.SelfDrivingCarAgent;
+import factories.EvaluationFactory;
+import rewards.EthicalReward;
+import rewards.EthicalRewardQuad;
+import rewards.Reward;
 import worlds.SelfDrivingCarWorld;
 
 public class Main {
@@ -46,56 +50,43 @@ public class Main {
 
         SelfDrivingCarWorld world = new SelfDrivingCarWorld(locations, roads, startLocation, goalLocation);
 
+        // Reward Calculator necessities
+        List<Integer> context = new ArrayList<>();
+        context.add(0);
+        
         SelfDrivingCarAgent agent = new SelfDrivingCarAgent(world);
+        
+        EvaluationFactory eF = new EvaluationFactory(context, agent, Integer.MAX_VALUE);
+
+        eF.setStateEval("COLLEGE", 1, 0);
+        Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
+        Map<Integer,Map<String,Integer>> stateEval = eF.getStateEval();
+
+
+        Reward ethicalReward = new EthicalReward(context, stateActionEval, stateEval);
 
         List<String> locationStrings = new ArrayList<>(Arrays.asList("HOME","TRAIN_STATION","PIZZA_PLACE","COLLEGE","GAS_STATION"));
-
-
-        //for(String str : agent.getAllStateKeys()){
-        //    System.out.println(str);
-        //}
-
-
-        // Get Possible Actions for given state check
-
-        Set<String> possibleActions = new HashSet<>();
-        // possibleActions.addAll(agent.getPossibleActionsForState("MERRICK_ROAD_NORTH_COUNTY_LOW_HEAVY"));
-        // System.out.println("MERRICK_ROAD_NORTH_COUNTY_LOW_HEAVY possible actions : " + possibleActions);
-        // possibleActions.clear();
-
-        possibleActions.addAll(agent.getPossibleActionsForState("TRAIN_STATION"));
-        System.out.println("TRAIN_STATION possible actions : " + possibleActions);
-        possibleActions.clear();
-
-        // possibleActions.addAll(agent.getPossibleActionsForState("MERRICK_ROAD_NORTH_COUNTY_NONE_HEAVY"));
-        // System.out.println("MERRICK_ROAD_NORTH_COUNTY_NONE_HEAVY possible actions" + possibleActions);
-        // possibleActions.clear();
-        
-        
-        // Get possible resulting states from state-action pair
-        // Set<String> possibleResultingStates = new HashSet<>();
-        // possibleResultingStates.addAll(agent.getPossibleResultingStates("TRAIN_STATION","TURN_ONTO_GRAY_STREET_SOUTH"));
-        // System.out.println("Resulting states for state : \"TRAIN_STATION\" and action : \"TURN_ONTO_GRAY_STREET_SOUTH\" : "+possibleResultingStates);
-
-        // possibleResultingStates.clear();
-        // possibleResultingStates.addAll(agent.getPossibleResultingStates("GRAY_STREET_NORTH_CITY_NONE_HEAVY", "TO_HIGH"));
-        // System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_NONE_HEAVY\" and action : \"TO_HIGH\" : "+possibleResultingStates);
-
-        // possibleResultingStates.clear();
-        // possibleResultingStates.addAll(agent.getPossibleResultingStates("GRAY_STREET_NORTH_CITY_HIGH_HEAVY", "CRUISE"));
-        // System.out.println("Resulting states for state : \"GRAY_STREET_NORTH_CITY_HIGH_HEAVY\" and action : \"CRUISE\" : "+possibleResultingStates);
-
-
-        // Transition Function
 
         for(String currState : agent.getAllStateKeys()){
             for(String action : agent.getPossibleActionsForState(currState)){
                 for(String nextState : agent.getPossibleResultingStates(currState, action)){
-                    Double transitionProbability = agent.transitionFunction(currState, action, nextState);
-                        System.out.println("Transition for : (" + currState + " , " + action + " , " + nextState + ") =  " + transitionProbability);
+                    Double reward = agent.rewardFunction(currState, action, nextState, ethicalReward, 1., 1., false);
+                        System.out.println("Reward for : (" + currState + " , " + action + " , " + nextState + ") =  " + reward);
                 }
             }
         }
+     
+
+        // Transition Function
+
+        // for(String currState : agent.getAllStateKeys()){
+        //     for(String action : agent.getPossibleActionsForState(currState)){
+        //         for(String nextState : agent.getPossibleResultingStates(currState, action)){
+        //             Double transitionProbability = agent.transitionFunction(currState, action, nextState);
+        //                 System.out.println("Transition for : (" + currState + " , " + action + " , " + nextState + ") =  " + transitionProbability);
+        //         }
+        //     }
+        // }
 
 
         // Reward function
