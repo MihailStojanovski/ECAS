@@ -2,11 +2,6 @@ package factories;
 
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.namespace.QName;
-
-import static java.util.Map.entry;
-
 import java.util.HashMap;
 
 import agents.SelfDrivingCarAgent;
@@ -23,31 +18,54 @@ public class EvaluationFactory {
     private SelfDrivingCarAgent agent;
 
 
-    public EvaluationFactory(   List<Integer> context, SelfDrivingCarAgent agent, Integer defaultValue){
+    public EvaluationFactory(List<Integer> context, SelfDrivingCarAgent agent){
         this.context = context;
         this.agent = agent;
         this.stateActionEval = new HashMap<>();
         this.stateEval = new HashMap<>();
-        fillUpWithDefault(defaultValue);
     }
 
-    private void fillUpWithDefault(Integer defaultValue){
+    public void fillUpStateEvalWith(Integer evalValue){
         for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
             Map<String, Integer> stateEvalTemp = new HashMap<>();
+            for(String state : agent.getAllStateKeys()){
+                stateEvalTemp.put(state,evalValue);
+            }
+            stateEval.put(contextValueIndex,stateEvalTemp);
+        }
+    }
+
+    public void fillUpStateActionEvalWith(Integer evalValue){
+        for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
             Map<String, Map<String, Integer>> stateActionEvalTemp = new HashMap<>();
             for(String state : agent.getAllStateKeys()){
                 Map<String, Integer> actionTemp = new HashMap<>();
                 for(String action : agent.getPossibleActionsForState(state)){
-                    
-                    actionTemp.put(action, defaultValue);
+                    actionTemp.put(action, evalValue);
                 }
-                stateEvalTemp.put(state, defaultValue);
                 stateActionEvalTemp.put(state,actionTemp);
             }
-            stateEval.put(contextValueIndex, stateEvalTemp);
             stateActionEval.put(contextValueIndex, stateActionEvalTemp);
         }
     }
+
+    // private void fillUpWithDefault(Integer defaultValue){
+    //     for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
+    //         Map<String, Integer> stateEvalTemp = new HashMap<>();
+    //         Map<String, Map<String, Integer>> stateActionEvalTemp = new HashMap<>();
+    //         for(String state : agent.getAllStateKeys()){
+    //             Map<String, Integer> actionTemp = new HashMap<>();
+    //             for(String action : agent.getPossibleActionsForState(state)){
+                    
+    //                 actionTemp.put(action, defaultValue);
+    //             }
+    //             stateEvalTemp.put(state, defaultValue);
+    //             stateActionEvalTemp.put(state,actionTemp);
+    //         }
+    //         stateEval.put(contextValueIndex, stateEvalTemp);
+    //         stateActionEval.put(contextValueIndex, stateActionEvalTemp);
+    //     }
+    // }
 
     public void setStateEval(String state, Integer evaluation, Integer contextValueIndex){
         Map<String,Integer> tmp = stateEval.get(contextValueIndex);

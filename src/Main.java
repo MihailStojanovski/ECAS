@@ -56,22 +56,21 @@ public class Main {
         
         SelfDrivingCarAgent agent = new SelfDrivingCarAgent(world);
         
-        EvaluationFactory eF = new EvaluationFactory(context, agent, Integer.MAX_VALUE);
+        EvaluationFactory eF = new EvaluationFactory(context, agent);
+        eF.fillUpStateActionEvalWith(Integer.MAX_VALUE);
+        eF.fillUpStateEvalWith(0);
 
         eF.setStateEval("COLLEGE", 1, 0);
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
         Map<Integer,Map<String,Integer>> stateEval = eF.getStateEval();
 
-
         Reward ethicalReward = new EthicalReward(context, stateActionEval, stateEval);
-
-        List<String> locationStrings = new ArrayList<>(Arrays.asList("HOME","TRAIN_STATION","PIZZA_PLACE","COLLEGE","GAS_STATION"));
 
         for(String currState : agent.getAllStateKeys()){
             for(String action : agent.getPossibleActionsForState(currState)){
                 for(String nextState : agent.getPossibleResultingStates(currState, action)){
-                    Double reward = agent.rewardFunction(currState, action, nextState, ethicalReward, 1., 1., false);
-                        System.out.println("Reward for : (" + currState + " , " + action + " , " + nextState + ") =  " + reward);
+                    EthicalRewardQuad reward = agent.rewardFunction(currState, action, nextState, ethicalReward, 1., 1., false);
+                        System.out.println("Reward for : (" + currState + " , " + action + " , " + nextState + ") =  " + reward.toString());
                 }
             }
         }

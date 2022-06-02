@@ -258,13 +258,15 @@ public class SelfDrivingCarAgent {
         return 0.0;
     }
 
-    public Double rewardFunction(String state, String action, String successorState, Reward r, Double epsilon, Double epsilonP, boolean isGood){
+    public EthicalRewardQuad rewardFunction(String state, String action, String successorState, Reward r, Double epsilon, Double epsilonP, boolean isGood){
             EthicalRewardQuad quad = r.getEthicalReward(state, action, successorState);
             if(isGood){
-                return quad.getTriangle() - quad.getTriangleBarre() - epsilonP * quad.getTriangleBarre();
+                //return quad.getTriangle() - quad.getTriangleBarre() - epsilonP * quad.getTriangleBarre();
+                return quad;
             } 
             else{
-                return quad.getNabla() - quad.getNablaBarre() + epsilon * quad.getNablaBarre();
+                //return quad.getNabla() - quad.getNablaBarre() + epsilon * quad.getNablaBarre();
+                return quad;
             }
     }
     

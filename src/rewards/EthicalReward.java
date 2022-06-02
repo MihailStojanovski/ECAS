@@ -45,7 +45,7 @@ public class EthicalReward implements Reward {
                     quad.incrementNabla();
                 }
                 else if(getTransitionEval(state, action, successorState, i) == 0 && stateEval.get(i).get(state) == 1){
-                    quad.incrementNablaBarre();
+                    quad.incrementBarredNabla();
                 }
             }
             // Context value is morally good
@@ -54,7 +54,7 @@ public class EthicalReward implements Reward {
                     quad.incrementTriangle();
                 }
                 else if(getTransitionEval(state, action, successorState, i) == 0 && stateEval.get(i).get(state) == 1){
-                    quad.incrementTriangleBarre();
+                    quad.incrementBarredTriangle();
                 }
             } 
         }
