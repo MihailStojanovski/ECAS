@@ -68,7 +68,7 @@ public class Main {
         Reward ethicalReward = new EthicalReward(context, stateActionEval, stateEval);
 
         ValueIteration vi = new ValueIteration(agent, ethicalReward, 0.7, 0.1, 0.5);
-        for(Entry e : vi.getPolicy().entrySet()){
+        for(Entry<String, List<String>> e : vi.getPolicy().entrySet()){
             System.out.println(e);
         }
         
