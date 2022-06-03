@@ -64,9 +64,18 @@ public class SelfDrivingCarAgent {
     private List<String> locationActions = new ArrayList<>();
     private List<String> roadActions = new ArrayList<>();
     private List<String> allActions;
+    private Double epsilon = 0.5;
+    private Double epsilonPrime = 0.5;
 
     public SelfDrivingCarAgent(SelfDrivingCarWorld world){
         this.world = world;
+        setUpVariables();
+    }
+
+    public SelfDrivingCarAgent(SelfDrivingCarWorld world, Double epsilon, Double epsilonPrime){
+        this.world = world;
+        this.epsilon = epsilon;
+        this.epsilonPrime = epsilonPrime;
         setUpVariables();
     }
 
@@ -258,63 +267,22 @@ public class SelfDrivingCarAgent {
         return 0.0;
     }
 
-    public EthicalRewardQuad rewardFunction(String state, String action, String successorState, Reward r, Double epsilon, Double epsilonP, boolean isGood){
+    public Double rewardFunction(String state, String action, String successorState, Reward r, boolean isGood){
             EthicalRewardQuad quad = r.getEthicalReward(state, action, successorState);
             if(isGood){
-                //return quad.getTriangle() - quad.getTriangleBarre() - epsilonP * quad.getTriangleBarre();
-                return quad;
+                return quad.getTriangle() - quad.getBarredTriangle() - epsilonPrime * quad.getBarredTriangle();
             } 
             else{
-                //return quad.getNabla() - quad.getNablaBarre() + epsilon * quad.getNablaBarre();
-                return quad;
+                return quad.getNabla() - quad.getBarredNabla() + epsilon * quad.getBarredNabla();
             }
     }
-    
 
-    /* OLD Reward function
-    public Double rewardFunction(String state, String action){
-
-        StateRegistry stateRegistry = stateRegistryMap.get(state);
-        StringBuilder builder = new StringBuilder();
-        
-        if(world.getGoalLocation().getName().equals(stateRegistry.getState().getName()) && action.equals("STAY")){
-            return 0.;
-        }
-
-        if(locationStrings.contains(state) && action.equals("STAY")){
-            return -stayingTime;
-        }
-
-        if(locationStrings.contains(state) && locationActions.contains(action)){
-            for(Road r : world.getRoads()){
-                builder.setLength(0);
-                builder.append("TURN_ONTO_");
-                builder.append(r.getName());
-                if(action.equals(builder.toString()) && stateRegistry.getState().getName().equals(r.getFromLocation())){
-                    return -turningTime;
-                }
-            }
-        }
-
-        if(roadStrings.contains(state) && action.equals("CRUISE") && !stateRegistry.getSpeedAdjustment().equals("NONE")){
-            Integer sLimit = this.speedLimits.get(((Road)stateRegistry.getState()).getType());
-            Double distance = ((Road)stateRegistry.getState()).getLength();
-            return -3600 * distance/sLimit;
-        }
-
-        if(roadStrings.contains(state) && accelerateActions.containsKey(action) && stateRegistry.getSpeedAdjustment().equals("NONE")){
-            Integer speed = speedLimits.get(((Road)stateRegistry.getState()).getType()) + speedAdjustments.get(accelerateActions.get(action));
-            return -accelerationRate * speed/10;
-        }
-
-        return -driverErrorPenalty;
+    public String getStartState(){
+        return stateRegistryMap.get(world.getStartLocation().getName()).toString();
     }
-    */
 
-    
-
-    public State startState(){
-        return world.getStartLocation();
+    public String getGoalState(){
+        return stateRegistryMap.get(world.getGoalLocation().getName()).toString();
     }
 
     public StateRegistry getStateRegistry(String s){

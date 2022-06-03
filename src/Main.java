@@ -60,48 +60,18 @@ public class Main {
         eF.fillUpStateActionEvalWith(Integer.MAX_VALUE);
         eF.fillUpStateEvalWith(0);
 
-        eF.setStateEval("COLLEGE", 1, 0);
+        eF.setStateEval("STATION_HIGHWAY_SOUTH_HIGHWAY_HIGH_HEAVY", 1, 0);
+        eF.setStateEval("STATION_HIGHWAY_NORTH_HIGHWAY_HIGH_HEAVY", 1, 0);
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
         Map<Integer,Map<String,Integer>> stateEval = eF.getStateEval();
 
         Reward ethicalReward = new EthicalReward(context, stateActionEval, stateEval);
 
-        for(String currState : agent.getAllStateKeys()){
-            for(String action : agent.getPossibleActionsForState(currState)){
-                for(String nextState : agent.getPossibleResultingStates(currState, action)){
-                    EthicalRewardQuad reward = agent.rewardFunction(currState, action, nextState, ethicalReward, 1., 1., false);
-                        System.out.println("Reward for : (" + currState + " , " + action + " , " + nextState + ") =  " + reward.toString());
-                }
-            }
+        ValueIteration vi = new ValueIteration(agent, ethicalReward, 0.7, 0.1, 0.5);
+        for(Entry e : vi.getPolicy().entrySet()){
+            System.out.println(e);
         }
-     
-
-        // Transition Function
-
-        // for(String currState : agent.getAllStateKeys()){
-        //     for(String action : agent.getPossibleActionsForState(currState)){
-        //         for(String nextState : agent.getPossibleResultingStates(currState, action)){
-        //             Double transitionProbability = agent.transitionFunction(currState, action, nextState);
-        //                 System.out.println("Transition for : (" + currState + " , " + action + " , " + nextState + ") =  " + transitionProbability);
-        //         }
-        //     }
-        // }
-
-
-        // Reward function
-
-        // for(String stateR : agent.getAllStateKeys()){
-        //     for(String actionR : agent.getAllActions()){
-        //             Double reward = agent.rewardFunction(stateR, actionR);
-        //             if(reward != -3600){
-        //                 System.out.println("Reward for : (" + stateR + " , " + actionR +  ") =  " + reward);
-        //             }
-        //     }
-        // }
-
         
-        
-
 
     }
 

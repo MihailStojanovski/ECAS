@@ -49,35 +49,12 @@ public class EvaluationFactory {
         }
     }
 
-    // private void fillUpWithDefault(Integer defaultValue){
-    //     for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
-    //         Map<String, Integer> stateEvalTemp = new HashMap<>();
-    //         Map<String, Map<String, Integer>> stateActionEvalTemp = new HashMap<>();
-    //         for(String state : agent.getAllStateKeys()){
-    //             Map<String, Integer> actionTemp = new HashMap<>();
-    //             for(String action : agent.getPossibleActionsForState(state)){
-                    
-    //                 actionTemp.put(action, defaultValue);
-    //             }
-    //             stateEvalTemp.put(state, defaultValue);
-    //             stateActionEvalTemp.put(state,actionTemp);
-    //         }
-    //         stateEval.put(contextValueIndex, stateEvalTemp);
-    //         stateActionEval.put(contextValueIndex, stateActionEvalTemp);
-    //     }
-    // }
-
     public void setStateEval(String state, Integer evaluation, Integer contextValueIndex){
-        Map<String,Integer> tmp = stateEval.get(contextValueIndex);
-        tmp.put(state, evaluation);
-        stateEval.put(contextValueIndex, tmp);
+        stateEval.get(contextValueIndex).replace(state, evaluation);
     }
 
     public void setStateActionEval(String state, String action, Integer evaluation, Integer contextValueIndex){
-        Map<String,Integer> tmpActions = stateActionEval.get(contextValueIndex).get(state);
-        tmpActions.put(action, evaluation);
-        
-        stateActionEval.get(contextValueIndex).put(state, tmpActions);
+        stateActionEval.get(contextValueIndex).get(state).replace(action, evaluation);
     }
 
     public Map<Integer,Map<String,Integer>> getStateEval(){
