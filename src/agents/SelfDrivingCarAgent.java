@@ -64,8 +64,8 @@ public class SelfDrivingCarAgent {
     private List<String> locationActions = new ArrayList<>();
     private List<String> roadActions = new ArrayList<>();
     private List<String> allActions;
-    private Double epsilon = 0.5;
-    private Double epsilonPrime = 0.5;
+    private Double epsilon = 0.8;
+    private Double epsilonPrime = 0.8;
 
     public SelfDrivingCarAgent(SelfDrivingCarWorld world){
         this.world = world;
@@ -278,11 +278,11 @@ public class SelfDrivingCarAgent {
     }
 
     public String getStartState(){
-        return stateRegistryMap.get(world.getStartLocation().getName()).toString();
+        return stateRegistryMap.get(world.getStartLocation()).toString();
     }
 
     public String getGoalState(){
-        return stateRegistryMap.get(world.getGoalLocation().getName()).toString();
+        return stateRegistryMap.get(world.getGoalLocation()).toString();
     }
 
     public StateRegistry getStateRegistry(String s){

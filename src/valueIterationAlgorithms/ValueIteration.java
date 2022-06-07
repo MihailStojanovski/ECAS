@@ -1,10 +1,10 @@
+package valueIterationAlgorithms;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.sound.midi.Track;
 
 import agents.SelfDrivingCarAgent;
 import rewards.Reward;
@@ -12,7 +12,7 @@ import rewards.Reward;
 public class ValueIteration {
 
     private SelfDrivingCarAgent agent;
-    private Reward rewardCalculator;
+    private Reward ethicalRewardCalculator;
     private Double alpha;
     private Double convergenceAchieved;
     private Double gamma;
@@ -21,9 +21,9 @@ public class ValueIteration {
     private Map<String, Map<String, Double>> qGood = new HashMap<>(); 
     
     
-    public ValueIteration(SelfDrivingCarAgent agent, Reward rewardCalculator, Double alpha, Double convergenceAchieved,  Double gamma){
+    public ValueIteration(SelfDrivingCarAgent agent, Reward ethicalRewardCalculator, Double alpha, Double convergenceAchieved,  Double gamma){
         this.agent = agent;
-        this.rewardCalculator = rewardCalculator;
+        this.ethicalRewardCalculator = ethicalRewardCalculator;
         this.alpha = alpha;
         this.convergenceAchieved = convergenceAchieved;
         this.gamma = gamma;
@@ -84,8 +84,8 @@ public class ValueIteration {
                             }
                         }// End of loop for possible actions 
 
-                        qSumHarm += transitionProbability * (agent.rewardFunction(state, action, stateP, rewardCalculator, false) + gamma * minHarm);
-                        qSumGood += transitionProbability * (agent.rewardFunction(state, action, stateP, rewardCalculator, true) + gamma * maxGood);
+                        qSumHarm += transitionProbability * (agent.rewardFunction(state, action, stateP, ethicalRewardCalculator, false) + gamma * minHarm);
+                        qSumGood += transitionProbability * (agent.rewardFunction(state, action, stateP, ethicalRewardCalculator, true) + gamma * maxGood);
                     }// End of loop for possible resulting states
 
                     // Set the new values for the state and action
@@ -99,47 +99,50 @@ public class ValueIteration {
             }// End of loop of all states and possible actions
         }// End of while
 
-        // Policy extraction
+        // Policy extraction w.r.t. harm
         Map<String, List<String>> policyHarm = new HashMap<>();
         for(String state : agent.getAllStateKeys()){
             List<String> stateActionsHarm = new ArrayList<>();
             Double minAction = Double.MAX_VALUE;
             for(String action : agent.getPossibleActionsForState(state)){
+                Double qHarmValue = qHarm.get(state).get(action);
                 if(stateActionsHarm.isEmpty()){
                     stateActionsHarm.add(action);
-                    minAction = qHarm.get(state).get(action);
-                }else if(minAction > qHarm.get(state).get(action)){
+                    minAction = qHarmValue;
+                }else if(minAction.equals(qHarmValue)){
+                    stateActionsHarm.add(action);
+                }else if(minAction > qHarmValue){
                     stateActionsHarm.clear();
                     stateActionsHarm.add(action);
-                    minAction = qHarm.get(state).get(action);
-                }else if(minAction == qHarm.get(state).get(action)){
-                    stateActionsHarm.add(action);
+                    minAction = qHarmValue;
                 }
             }
             policyHarm.put(state, stateActionsHarm);
         }
 
-        Map<String, List<String>> policyGood = new HashMap<>();
-        for(Entry<String, List<String>> e : policyHarm.entrySet()){
-            List<String> stateActionsGood = new ArrayList<>();
-            Double maxAction = -Double.MAX_VALUE;
-            for(String action : e.getValue()){
-                if(stateActionsGood.isEmpty()){
-                    stateActionsGood.add(action);
-                    maxAction = qHarm.get(e.getKey()).get(action);
-                }else if(maxAction < qHarm.get(e.getKey()).get(action)){
-                    stateActionsGood.clear();
-                    stateActionsGood.add(action);
-                    maxAction = qHarm.get(e.getKey()).get(action);
-                }else if(maxAction == qHarm.get(e.getKey()).get(action)){
-                    stateActionsGood.add(action);
-                }
-            }
-            policyGood.put(e.getKey(), stateActionsGood);
-        }
+        // Policy extraction w.r.t. good
+        // Map<String, List<String>> policyGood = new HashMap<>();
+        // for(Entry<String, List<String>> e : policyHarm.entrySet()){
+        //     List<String> stateActionsGood = new ArrayList<>();
+        //     Double maxAction = -Double.MAX_VALUE;
+        //     for(String action : e.getValue()){
+        //         Double qGoodValue = qGood.get(e.getKey()).get(action);
+        //         if(stateActionsGood.isEmpty()){
+        //             stateActionsGood.add(action);
+        //             maxAction = qGoodValue;
+        //         }else if(maxAction.equals(qGoodValue)){
+        //             stateActionsGood.add(action);
+        //         }else if(maxAction < qGoodValue){
+        //             stateActionsGood.clear();
+        //             stateActionsGood.add(action);
+        //             maxAction = qGoodValue;
+        //         }
+        //     }
+        //     policyGood.put(e.getKey(), stateActionsGood);
+        // }
 
         
-        return policyGood;
+        return policyHarm;
     }
 
 

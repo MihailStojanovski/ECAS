@@ -1,19 +1,19 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.function.DoubleBinaryOperator;
 
 import states.Location;
 import states.Road;
 import states.State;
+import valueIterationAlgorithms.ValueIteration;
 import agents.SelfDrivingCarAgent;
 import factories.EvaluationFactory;
+import parsers.WorldMapParser;
 import rewards.EthicalReward;
 import rewards.EthicalRewardQuad;
 import rewards.Reward;
@@ -45,32 +45,38 @@ public class Main {
         roads.add(new Road("COLLEGE_STREET_NORTH", "COLLEGE", "GAS_STATION", 2., "CITY"));
         roads.add(new Road("COLLEGE_STREET_SOUTH", "GAS_STATION", "COLLEGE", 2., "CITY"));
 
-        State startLocation = new Location("HOME");
-        State goalLocation = new Location("GAS_STATION");
+        String startLocation = "HOME";
+        String goalLocation = "GAS_STATION";
 
         SelfDrivingCarWorld world = new SelfDrivingCarWorld(locations, roads, startLocation, goalLocation);
 
-        // Reward Calculator necessities
+        WorldMapParser parser = new WorldMapParser();
+        SelfDrivingCarWorld w2 = parser.getWorldFromJsonMap("maps/SelfDrivingCarMap.json");
+
+        // VI test
         List<Integer> context = new ArrayList<>();
         context.add(0);
         
-        SelfDrivingCarAgent agent = new SelfDrivingCarAgent(world);
+        SelfDrivingCarAgent agent = new SelfDrivingCarAgent(w2);
         
         EvaluationFactory eF = new EvaluationFactory(context, agent);
         eF.fillUpStateActionEvalWith(Integer.MAX_VALUE);
         eF.fillUpStateEvalWith(0);
 
-        eF.setStateEval("STATION_HIGHWAY_SOUTH_HIGHWAY_HIGH_HEAVY", 1, 0);
-        eF.setStateEval("STATION_HIGHWAY_NORTH_HIGHWAY_HIGH_HEAVY", 1, 0);
+        //eF.setStateEval("TRAIN_STATION", 1, 0);
+        eF.setStateActionEval("OAK_ROAD_COUNTY_NONE_LIGHT", "TO_LOW", 1, 0);
+
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
         Map<Integer,Map<String,Integer>> stateEval = eF.getStateEval();
 
         Reward ethicalReward = new EthicalReward(context, stateActionEval, stateEval);
 
-        ValueIteration vi = new ValueIteration(agent, ethicalReward, 0.7, 0.1, 0.5);
+        ValueIteration vi = new ValueIteration(agent, ethicalReward, 0.7, 0.1, 0.7);
         for(Entry<String, List<String>> e : vi.getPolicy().entrySet()){
             System.out.println(e);
         }
+
+
         
 
     }

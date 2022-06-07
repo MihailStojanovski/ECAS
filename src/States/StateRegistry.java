@@ -1,8 +1,5 @@
 package states;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
 public class StateRegistry {
     
     private State state;
