@@ -51,9 +51,11 @@ public class ValueIteration {
         Double convHarm = Double.MAX_VALUE;
         Double convGood = Double.MAX_VALUE;
 
+        int counter = 0;
+
         // Start of while
         while( (alpha * convHarm + (1 - alpha) * convGood) > convergenceAchieved){
-
+            counter++;
             convHarm = 0.;
             convGood = 0.;
             // Looping all states and possible actions
@@ -99,7 +101,9 @@ public class ValueIteration {
             }// End of loop of all states and possible actions
         }// End of while
 
-        // Policy extraction w.r.t. harm
+
+        // OLD Policy extraction w.r.t. harm
+    
         Map<String, List<String>> policyHarm = new HashMap<>();
         for(String state : agent.getAllStateKeys()){
             List<String> stateActionsHarm = new ArrayList<>();
@@ -119,6 +123,7 @@ public class ValueIteration {
             }
             policyHarm.put(state, stateActionsHarm);
         }
+
 
         // Policy extraction w.r.t. good
         // Map<String, List<String>> policyGood = new HashMap<>();
@@ -141,7 +146,7 @@ public class ValueIteration {
         //     policyGood.put(e.getKey(), stateActionsGood);
         // }
 
-        
+        System.out.println(counter);
         return policyHarm;
     }
 

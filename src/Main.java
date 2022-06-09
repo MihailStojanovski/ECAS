@@ -45,6 +45,11 @@ public class Main {
         roads.add(new Road("COLLEGE_STREET_NORTH", "COLLEGE", "GAS_STATION", 2., "CITY"));
         roads.add(new Road("COLLEGE_STREET_SOUTH", "GAS_STATION", "COLLEGE", 2., "CITY"));
 
+        // Road from home to pizza place
+        roads.add(new Road("HP_NORTH", "HOME", "PIZZA_PLACE", 5., "CITY"));
+        roads.add(new Road("HP_SOUTH", "PIZZA_PLACE", "HOME", 5., "CITY"));
+
+
         String startLocation = "HOME";
         String goalLocation = "GAS_STATION";
 
@@ -64,14 +69,14 @@ public class Main {
         eF.fillUpStateEvalWith(0);
 
         //eF.setStateEval("TRAIN_STATION", 1, 0);
-        eF.setStateActionEval("OAK_ROAD_COUNTY_NONE_LIGHT", "TO_LOW", 1, 0);
+        //eF.setStateActionEval("OAK_ROAD_COUNTY_NONE_LIGHT", "TO_LOW", 1, 0);
 
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
         Map<Integer,Map<String,Integer>> stateEval = eF.getStateEval();
 
         Reward ethicalReward = new EthicalReward(context, stateActionEval, stateEval);
 
-        ValueIteration vi = new ValueIteration(agent, ethicalReward, 0.7, 0.1, 0.7);
+        ValueIteration vi = new ValueIteration(agent, ethicalReward, 0.7, 0.1, 0.9);
         for(Entry<String, List<String>> e : vi.getPolicy().entrySet()){
             System.out.println(e);
         }

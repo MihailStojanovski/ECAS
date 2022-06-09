@@ -16,6 +16,7 @@ import states.State;
 import states.StateRegistry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import worlds.SelfDrivingCarWorld;
 
@@ -90,11 +91,13 @@ public class SelfDrivingCarAgent {
             allStateKeys.add(tempSR.toString());
         }
 
+        List<String> speedList = new ArrayList<>(Arrays.asList("NONE", "LOW", "NORMAL","HIGH"));
+        List<String> pedestrianList = new ArrayList<>(Arrays.asList("LIGHT","HEAVY"));
         // Adding cartesian product of road states, speedAdjustments, pedestrianTraffic to a unique string for each
         for (State state : world.getRoads()) {
-            for(Map.Entry<String,Integer> speedEntry : speedAdjustments.entrySet()){
-                for(Map.Entry<String,Double> pTrafficEntry : pedestrianTraffic.entrySet()){
-                    StateRegistry tempSR = new StateRegistry(state, speedEntry.getKey(), pTrafficEntry.getKey());
+            for(String speedEntry : speedList){
+                for(String pTrafficEntry : pedestrianList){
+                    StateRegistry tempSR = new StateRegistry(state, speedEntry, pTrafficEntry);
                     stateRegistryMap.put(tempSR.toString(),tempSR);
                     roadStrings.add(tempSR.toString());
                     allStateKeys.add(tempSR.toString());
@@ -103,19 +106,19 @@ public class SelfDrivingCarAgent {
         }
 
         // Making location actions
-        locationActions.add("STAY");
         for(State state : world.getRoads()){
             builder.append("TURN_ONTO_");
             builder.append(state.getName());
             locationActions.add(builder.toString());
             builder.setLength(0);
         }
+        locationActions.add("STAY");
 
         // Making road actions
-        roadActions.add("CRUISE");
         for(Map.Entry<String,String> a : accelerateActions.entrySet()){
             roadActions.add(a.getKey());
         }
+        roadActions.add("CRUISE");
 
         allActions = new ArrayList<>(locationActions);
         allActions.addAll(roadActions);
@@ -142,6 +145,7 @@ public class SelfDrivingCarAgent {
     public Set<String> getPossibleActionsForState(String state){
         Set<String> possibleActions = new HashSet<>();
         if(locationStrings.contains(state)){
+            possibleActions.add("STAY");
             StringBuilder builder = new StringBuilder();
             for(String rS : roadStrings){
                 StateRegistry roadStateReg = stateRegistryMap.get(rS);
@@ -152,7 +156,6 @@ public class SelfDrivingCarAgent {
                     builder.setLength(0);
                 }
             }
-            possibleActions.add("STAY");
         }
         if(roadStrings.contains(state)){
             if(stateRegistryMap.get(state).getSpeedAdjustment().equals("NONE")){
