@@ -174,6 +174,8 @@ public class SelfDrivingCarAgent {
     }
 
     public Double rewardFunction(String state, String action, String successorState, Reward r, boolean isGood){
+            Double epsilonPrime = 0.7;
+            Double epsilon = 0.7;
             EthicalRewardQuad quad = r.getEthicalReward(state, action, successorState);
             if(isGood){
                 return quad.getTriangle() - quad.getBarredTriangle() - epsilonPrime * quad.getBarredTriangle();
