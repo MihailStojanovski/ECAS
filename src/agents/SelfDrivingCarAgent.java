@@ -34,16 +34,25 @@ public class SelfDrivingCarAgent {
     private final Double driverErrorPenalty = 3600.;
     
     private SelfDrivingCarWorld world;
+    private Reward rewardCalculator;
 
     private Map<String, Map<String, Map<String, Double>>> transitionsMap;
     private Map<String, Map<String, Map<String, EthicalRewardQuad>>> rewardsMap;
 
-    public SelfDrivingCarAgent(SelfDrivingCarWorld world){
+    public SelfDrivingCarAgent(SelfDrivingCarWorld world, Reward rewardCalculator){
         this.world = world;
+        this.rewardCalculator = rewardCalculator;
+
+        for( String state : world.getAllStateKeys()){
+            for(String action : this.getPossibleActionsForState(state)){
+                for(String successorState : this.getPossibleResultingStates(state, action)){
+                    this.calculateAndSaveTransitions(state, action, successorState);
+                    this.calculateAndSaveRewards(state,action,successorState);
+                }
+            }
+        }
 
     }
-
-
 
 /**
  * The getPossibleActionsForState function returns a set of possible actions for the given state.
@@ -165,9 +174,33 @@ public class SelfDrivingCarAgent {
 
     private void calculateAndSaveTransitions(String state, String action, String successorState){
         Double t = transitionFunction(state, action, successorState);
+        
+        Map<String, Double> sPrimeToTransition= new HashMap<>();
+        sPrimeToTransition.put(successorState,t);
+
+        Map<String, Map<String,Double>> actionToSPrime = new HashMap<>();
+        actionToSPrime.put(action,sPrimeToTransition);
+
+        transitionsMap.put(state,actionToSPrime);
     }
 
 
+    private void calculateAndSaveRewards(String state, String action, String successorState){
+        
+        EthicalRewardQuad quad = rewardCalculator.getEthicalReward(state, action, successorState);
+
+        Map<String, EthicalRewardQuad> sPrimeToQuad = new HashMap<>();
+        sPrimeToQuad.put(successorState,quad);
+
+        Map<String, Map<String, EthicalRewardQuad>> actionToSPrime = new HashMap<>();
+        actionToSPrime.put(action,sPrimeToQuad);
+        
+        rewardsMap.put(state,actionToSPrime);
+    }
+
+ 
+    //Old Reward function
+    /*
     public Double rewardFunction(String state, String action, String successorState, Reward r){
         
         return 0.0;
@@ -188,5 +221,6 @@ public class SelfDrivingCarAgent {
     public SelfDrivingCarWorld getWorld() {
         return world;
     }
+    */
 
 }
