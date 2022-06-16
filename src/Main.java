@@ -22,6 +22,7 @@ import worlds.SelfDrivingCarWorld;
 public class Main {
     public static void main(String[] args) {
 
+        /*
         List<Location> locations = new ArrayList<>();
         locations.add(new Location("HOME"));
         locations.add(new Location("TRAIN_STATION"));
@@ -48,12 +49,13 @@ public class Main {
         // Road from home to pizza place
         roads.add(new Road("HP_NORTH", "HOME", "PIZZA_PLACE", 5., "CITY"));
         roads.add(new Road("HP_SOUTH", "PIZZA_PLACE", "HOME", 5., "CITY"));
-
-
+        
         String startLocation = "HOME";
         String goalLocation = "GAS_STATION";
-
+        
         SelfDrivingCarWorld world = new SelfDrivingCarWorld(locations, roads, startLocation, goalLocation);
+        
+        */
 
         WorldMapParser parser = new WorldMapParser();
         SelfDrivingCarWorld w2 = parser.getWorldFromJsonMap("maps/SelfDrivingCarMap.json");
@@ -68,8 +70,7 @@ public class Main {
         eF.fillUpStateActionEvalWith(Integer.MAX_VALUE);
         eF.fillUpStateEvalWith(0);
 
-        //eF.setStateEval("TRAIN_STATION", 1, 0);
-        //eF.setStateActionEval("OAK_ROAD_COUNTY_NONE_LIGHT", "TO_LOW", 1, 0);
+        eF.setStateEval("TRAIN_STATION", 1, 0);
 
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
         Map<Integer,Map<String,Integer>> stateEval = eF.getStateEval();

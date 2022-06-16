@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import agents.SelfDrivingCarAgent;
 import rewards.Reward;
+import worlds.SelfDrivingCarWorld;
 
 public class ValueIteration {
 
@@ -16,6 +17,7 @@ public class ValueIteration {
     private Double alpha;
     private Double convergenceAchieved;
     private Double gamma;
+    private SelfDrivingCarWorld world;
     
     private Map<String, Map<String, Double>> qHarm = new HashMap<>(); 
     private Map<String, Map<String, Double>> qGood = new HashMap<>(); 
@@ -27,13 +29,15 @@ public class ValueIteration {
         this.alpha = alpha;
         this.convergenceAchieved = convergenceAchieved;
         this.gamma = gamma;
+        this.world = agent.getWorld();
+
     }
 
 
     public Map<String, List<String>> getPolicy(){
 
         // Initialisation to 0 for all state-action pairs
-        for(String state : agent.getAllStateKeys()){
+        for(String state : world.getAllStateKeys()){
             Map<String, Double> tempActionHarm = new HashMap<>();
             Map<String, Double> tempActionGood = new HashMap<>();
             for(String action : agent.getPossibleActionsForState(state)){
@@ -45,8 +49,8 @@ public class ValueIteration {
         }
 
         // Setting the goal state and action STAY to -Card(S) and Card(S) respectively for harm and good
-        qHarm.get(agent.getGoalState()).replace("STAY", -Double.valueOf(agent.getAllStateKeys().size()));
-        qGood.get(agent.getGoalState()).replace("STAY", Double.valueOf(agent.getAllStateKeys().size()));
+        qHarm.get(world.getGoalLocation()).replace("STAY", -Double.valueOf(world.getAllStateKeys().size()));
+        qGood.get(world.getGoalLocation()).replace("STAY", Double.valueOf(world.getAllStateKeys().size()));
 
         Double convHarm = Double.MAX_VALUE;
         Double convGood = Double.MAX_VALUE;
@@ -59,7 +63,7 @@ public class ValueIteration {
             convHarm = 0.;
             convGood = 0.;
             // Looping all states and possible actions
-            for(String state : agent.getAllStateKeys()){
+            for(String state : world.getAllStateKeys()){
                 for(String action : agent.getPossibleActionsForState(state)){
 
                     Double tempHarm = qHarm.get(state).get(action); 
@@ -102,10 +106,9 @@ public class ValueIteration {
         }// End of while
 
 
-        // OLD Policy extraction w.r.t. harm
-    
+        System.out.println(qHarm);
         Map<String, List<String>> policyHarm = new HashMap<>();
-        for(String state : agent.getAllStateKeys()){
+        for(String state : world.getAllStateKeys()){
             List<String> stateActionsHarm = new ArrayList<>();
             Double minAction = Double.MAX_VALUE;
             for(String action : agent.getPossibleActionsForState(state)){

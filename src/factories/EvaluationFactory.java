@@ -28,7 +28,7 @@ public class EvaluationFactory {
     public void fillUpStateEvalWith(Integer evalValue){
         for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
             Map<String, Integer> stateEvalTemp = new HashMap<>();
-            for(String state : agent.getAllStateKeys()){
+            for(String state : agent.getWorld().getAllStateKeys()){
                 stateEvalTemp.put(state,evalValue);
             }
             stateEval.put(contextValueIndex,stateEvalTemp);
@@ -38,7 +38,7 @@ public class EvaluationFactory {
     public void fillUpStateActionEvalWith(Integer evalValue){
         for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
             Map<String, Map<String, Integer>> stateActionEvalTemp = new HashMap<>();
-            for(String state : agent.getAllStateKeys()){
+            for(String state : agent.getWorld().getAllStateKeys()){
                 Map<String, Integer> actionTemp = new HashMap<>();
                 for(String action : agent.getPossibleActionsForState(state)){
                     actionTemp.put(action, evalValue);

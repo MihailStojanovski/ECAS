@@ -32,106 +32,17 @@ public class SelfDrivingCarAgent {
     private final Double turningTime = 5.;
     private final Double accelerationRate = 2.;
     private final Double driverErrorPenalty = 3600.;
-
-    private final Map<String,String> accelerateActions = Map.ofEntries(
-      entry("TO_LOW","LOW"),
-      entry("TO_NORMAL","NORMAL"),
-      entry("TO_HIGH","HIGH")  
-    );
-
-    private final Map<String,Integer> speedAdjustments = Map.ofEntries(
-      entry("NONE",-100),
-      entry("LOW",-10),
-      entry("NORMAL",0),
-      entry("HIGH",10)  
-    );
-
-    private final Map<String,Integer> speedLimits = Map.ofEntries(
-      entry("CITY",25),
-      entry("COUNTY",45),
-      entry("HIGHWAY",75) 
-    );
-
-    private final Map<String,Double> pedestrianTraffic = Map.ofEntries(
-      entry("LIGHT",0.8),
-      entry("HEAVY",0.2)  
-    );
     
     private SelfDrivingCarWorld world;
-    private List<String> allStateKeys = new ArrayList<>();
-    private Map<String, StateRegistry> stateRegistryMap = new HashMap<String,StateRegistry>();
-    private List<String> locationStrings = new ArrayList<>();
-    private List<String> roadStrings = new ArrayList<>();
-    private List<String> locationActions = new ArrayList<>();
-    private List<String> roadActions = new ArrayList<>();
-    private List<String> allActions;
-    private Double epsilon = 0.8;
-    private Double epsilonPrime = 0.8;
+
+    private Map<String, Map<String, Map<String, Double>>> transitionsMap;
+    private Map<String, Map<String, Map<String, EthicalRewardQuad>>> rewardsMap;
 
     public SelfDrivingCarAgent(SelfDrivingCarWorld world){
         this.world = world;
-        setUpVariables();
+
     }
 
-    public SelfDrivingCarAgent(SelfDrivingCarWorld world, Double epsilon, Double epsilonPrime){
-        this.world = world;
-        this.epsilon = epsilon;
-        this.epsilonPrime = epsilonPrime;
-        setUpVariables();
-    }
-
-
-    private void setUpVariables(){
-        StringBuilder builder = new StringBuilder();
-
-        for (State state : world.getLocations()) {
-            StateRegistry tempSR = new StateRegistry(state);
-            stateRegistryMap.put(tempSR.toString(),tempSR);
-            locationStrings.add(tempSR.toString());
-            allStateKeys.add(tempSR.toString());
-        }
-
-        List<String> speedList = new ArrayList<>(Arrays.asList("NONE", "LOW", "NORMAL","HIGH"));
-        List<String> pedestrianList = new ArrayList<>(Arrays.asList("LIGHT","HEAVY"));
-        // Adding cartesian product of road states, speedAdjustments, pedestrianTraffic to a unique string for each
-        for (State state : world.getRoads()) {
-            for(String speedEntry : speedList){
-                for(String pTrafficEntry : pedestrianList){
-                    StateRegistry tempSR = new StateRegistry(state, speedEntry, pTrafficEntry);
-                    stateRegistryMap.put(tempSR.toString(),tempSR);
-                    roadStrings.add(tempSR.toString());
-                    allStateKeys.add(tempSR.toString());
-                }
-            }
-        }
-
-        // Making location actions
-        for(State state : world.getRoads()){
-            builder.append("TURN_ONTO_");
-            builder.append(state.getName());
-            locationActions.add(builder.toString());
-            builder.setLength(0);
-        }
-        locationActions.add("STAY");
-
-        // Making road actions
-        for(Map.Entry<String,String> a : accelerateActions.entrySet()){
-            roadActions.add(a.getKey());
-        }
-        roadActions.add("CRUISE");
-
-        allActions = new ArrayList<>(locationActions);
-        allActions.addAll(roadActions);
-
-    }// End Set up variables
-
-    public List<String> getAllStateKeys(){
-        return allStateKeys;
-    }
-
-    public List<String> getAllActions() {
-        return allActions;
-    }
 
 
 /**
@@ -144,11 +55,11 @@ public class SelfDrivingCarAgent {
  */
     public Set<String> getPossibleActionsForState(String state){
         Set<String> possibleActions = new HashSet<>();
-        if(locationStrings.contains(state)){
+        if(world.getLocationStrings().contains(state)){
             possibleActions.add("STAY");
             StringBuilder builder = new StringBuilder();
-            for(String rS : roadStrings){
-                StateRegistry roadStateReg = stateRegistryMap.get(rS);
+            for(String rS : world.getRoadStrings()){
+                StateRegistry roadStateReg = world.getRegistryFromStateKey(rS);
                 if(((Road)roadStateReg.getState()).getFromLocation().equals(state)){
                     builder.append("TURN_ONTO_");
                     builder.append(roadStateReg.getState().getName());
@@ -157,10 +68,10 @@ public class SelfDrivingCarAgent {
                 }
             }
         }
-        if(roadStrings.contains(state)){
-            if(stateRegistryMap.get(state).getSpeedAdjustment().equals("NONE")){
-                for(Map.Entry<String, String> a : accelerateActions.entrySet())
-                possibleActions.add(a.getKey()); 
+        if(world.getRoadStrings().contains(state)){
+            if(world.getRegistryFromStateKey(state).getSpeedAdjustment().equals("NONE")){
+                for(String a : world.getAccelerateActions().keySet())
+                possibleActions.add(a); 
             }
             else{
                 possibleActions.add("CRUISE");
@@ -182,12 +93,12 @@ public class SelfDrivingCarAgent {
         Set<String> possibleResultStates = new HashSet<>();
         StringBuilder builder = new StringBuilder();
         // If the state is a location state check if the action is a turn onto action
-        if(locationStrings.contains(state)){
+        if(world.getLocationStrings().contains(state)){
             if(action.equals("STAY")){
                 possibleResultStates.add(state);
             }else{
-                for(String roadKey : roadStrings){
-                    StateRegistry roadReg = stateRegistryMap.get(roadKey);
+                for(String roadKey : world.getRoadStrings()){
+                    StateRegistry roadReg = world.getRegistryFromStateKey(roadKey);
                     if(((Road)roadReg.getState()).getFromLocation().equals(state)){
                         if(roadReg.getSpeedAdjustment().equals("NONE")){
                             builder.append("TURN_ONTO_");
@@ -201,11 +112,11 @@ public class SelfDrivingCarAgent {
                 }
             }
             
-        }else if(roadStrings.contains(state)){
-            StateRegistry roadReg = stateRegistryMap.get(state);
+        }else if(world.getRoadStrings().contains(state)){
+            StateRegistry roadReg = world.getRegistryFromStateKey(state);
             if(roadReg.getSpeedAdjustment().equals("NONE")){
-                if(accelerateActions.keySet().contains(action)){
-                    StateRegistry tempReg = new StateRegistry(roadReg.getState(),accelerateActions.get(action),roadReg.getPedestrianTraffic());
+                if(world.getAccelerateActions().keySet().contains(action)){
+                    StateRegistry tempReg = new StateRegistry(roadReg.getState(), world.getAccelerateActions().get(action), roadReg.getPedestrianTraffic());
                     possibleResultStates.add(tempReg.toString());
                 }
             }else if(roadReg.getSpeedAdjustment().equals("LOW") || roadReg.getSpeedAdjustment().equals("NORMAL") || roadReg.getSpeedAdjustment().equals("HIGH")){
@@ -217,51 +128,43 @@ public class SelfDrivingCarAgent {
         return possibleResultStates;
     }
 
-
     public Double transitionFunction(String currentState, String action, String successorState){
 
-        /*
+        StateRegistry currentStateRegistry = world.getRegistryFromStateKey(currentState);
+        StateRegistry successorStateRegistry = world.getRegistryFromStateKey(successorState);
 
-        4 types of transitions:
-
-        ++++    t(loc,stay,loc) = 1.0   
-        ++++    t(loc,turn_onto,road_NONE) = 0.8(Light) || 0.2(Heavy)
-
-        ++++    t(road_NONE,to_speed,road_Speed) = 1.0
-        ++++    t(road_speed,cruise,loc) = 1.0
-
-        */
-        StateRegistry currentStateRegistry = stateRegistryMap.get(currentState);
-        StateRegistry successorStateRegistry = stateRegistryMap.get(successorState);
-
-        if(locationStrings.contains(currentState)){
+        if(world.getLocationStrings().contains(currentState)){
             if(action.equals("STAY")){
                 if(successorState.equals(currentState)){
                     return 1.0;
                 }
             }
-            else if(locationActions.contains(action) && !action.equals("STAY") ){
-                if(roadStrings.contains(successorState)){
+            else if(world.getLocationActions().contains(action) && !action.equals("STAY") ){
+                if(world.getRoadStrings().contains(successorState)){
                     if(successorStateRegistry.getSpeedAdjustment().equals("NONE")){
-                        return pedestrianTraffic.get(successorStateRegistry.getPedestrianTraffic());
+                        return world.getPedestrianTraffic().get(successorStateRegistry.getPedestrianTraffic());
                     }
                 }
             }
         }
 
-        if(roadStrings.contains(currentState)){
-            if(roadStrings.contains(successorState) && accelerateActions.containsKey(action)){
+        if(world.getRoadStrings().contains(currentState)){
+            if(world.getRoadStrings().contains(successorState) && world.getAccelerateActions().containsKey(action)){
                 if(currentStateRegistry.getSpeedAdjustment().equals("NONE") && !successorStateRegistry.getSpeedAdjustment().equals("NONE")){
                     return 1.0;
                 }
             }
-            if(locationStrings.contains(successorState) && action.equals("CRUISE")){
+            if(world.getLocationStrings().contains(successorState) && action.equals("CRUISE")){
                 if(!currentStateRegistry.getSpeedAdjustment().equals("NONE")){
                     return 1.0;
                 }
             }
         }
         return 0.0;
+    }
+
+    private void calculateAndSaveTransitions(String state, String action, String successorState){
+        Double t = transitionFunction(state, action, successorState);
     }
 
 
@@ -280,16 +183,8 @@ public class SelfDrivingCarAgent {
             }
     }
 
-    public String getStartState(){
-        return stateRegistryMap.get(world.getStartLocation()).toString();
-    }
-
-    public String getGoalState(){
-        return stateRegistryMap.get(world.getGoalLocation()).toString();
-    }
-
-    public StateRegistry getStateRegistry(String s){
-        return stateRegistryMap.get(s);
+    public SelfDrivingCarWorld getWorld() {
+        return world;
     }
 
 }
