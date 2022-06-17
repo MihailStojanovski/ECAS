@@ -3,8 +3,17 @@ package rewards;
 import java.util.List;
 import java.util.Map;
 
+import states.Road;
+import states.StateRegistry;
+import worlds.SelfDrivingCarWorld;
+
 public class EthicalReward implements Reward {
 
+
+    private Double stayingTime = 120.;
+    private Double turningTime = 5.;
+    private Double accelerationRate = 2.;
+    private Double driverErrorPenalty = 3600.;
 
     // The context with the moral values
     private List<Integer> context;
@@ -15,10 +24,13 @@ public class EthicalReward implements Reward {
     // The moral evaluation of a state with the integer representing the associated moral value
     private Map<Integer,Map<String,Integer>> stateEval;
 
-    public EthicalReward(List<Integer> context, Map<Integer,Map<String,Map<String,Integer>>> stateActionEval, Map<Integer,Map<String,Integer>> stateEval) {
+    private SelfDrivingCarWorld world;
+
+    public EthicalReward(List<Integer> context, Map<Integer,Map<String,Map<String,Integer>>> stateActionEval, Map<Integer,Map<String,Integer>> stateEval, SelfDrivingCarWorld world) {
         this.context = context;
         this.stateActionEval = stateActionEval;
         this.stateEval = stateEval;
+        this.world = world;
     }
 
     private Integer getTransitionEval(String state, String action, String successorState, int ctxValueIndex){
@@ -62,10 +74,46 @@ public class EthicalReward implements Reward {
     }
 
     @Override
-    public Integer getReward(String state, String action, String successorState) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    public Double getTaskReward(String currentState, String action, String successorState){
 
+        StateRegistry currentStateRegistry = world.getRegistryFromStateKey(currentState);
+        StateRegistry successorStateRegistry = world.getRegistryFromStateKey(successorState);
+
+        if(world.getGoalLocation().equals(currentState)){
+            if(action.equals("STAY")){
+                if(successorState.equals(currentState)){
+                    return 0.;
+                }
+            }
+        }
+        if(world.getLocationStrings().contains(currentState) && action.equals("STAY")){
+            return stayingTime;
+        }
+
+        if(world.getLocationActions().contains(action) && !action.equals("STAY") ){
+                if(world.getRoadStrings().contains(successorState)){
+                    if(successorStateRegistry.getSpeedAdjustment().equals("NONE")){
+                        return turningTime;
+                    }
+                }
+        }
+
+        if(world.getRoadStrings().contains(currentState)){
+            if(world.getRoadStrings().contains(successorState) && world.getAccelerateActions().containsKey(action)){
+                if(currentStateRegistry.getSpeedAdjustment().equals("NONE") && !successorStateRegistry.getSpeedAdjustment().equals("NONE")){
+                    int speed = world.getSpeedLimits().get(((Road)world.getRegistryFromStateKey(currentState).getState()).getType());
+                    return accelerationRate * speed / 10;
+                }
+            }
+            if(world.getLocationStrings().contains(successorState) && action.equals("CRUISE")){
+                if(!currentStateRegistry.getSpeedAdjustment().equals("NONE")){
+                    Double speed = world.getSpeedLimits().get(((Road)world.getRegistryFromStateKey(currentState).getState()).getType()) + Double.valueOf(world.getSpeedAdjustments().get(world.getRegistryFromStateKey(currentState).getSpeedAdjustment()));
+                    Double distance = ((Road)world.getRegistryFromStateKey(currentState).getState()).getLength();
+                    return 3600 * distance / speed;
+                }
+            }
+        }
+        return driverErrorPenalty;
+    }
 
 }

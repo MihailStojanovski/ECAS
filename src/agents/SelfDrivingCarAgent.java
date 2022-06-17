@@ -37,104 +37,17 @@ public class SelfDrivingCarAgent {
     private Reward rewardCalculator;
 
     private Map<String, Map<String, Map<String, Double>>> transitionsMap;
-    private Map<String, Map<String, Map<String, EthicalRewardQuad>>> rewardsMap;
+    private Map<String, Map<String, Map<String, Map<String, Double>>>> rewardsMap;
 
     public SelfDrivingCarAgent(SelfDrivingCarWorld world, Reward rewardCalculator){
         this.world = world;
         this.rewardCalculator = rewardCalculator;
+        this.transitionsMap = new HashMap<>();
+        this.rewardsMap = new HashMap<>();
 
-        for( String state : world.getAllStateKeys()){
-            for(String action : this.getPossibleActionsForState(state)){
-                for(String successorState : this.getPossibleResultingStates(state, action)){
-                    this.calculateAndSaveTransitions(state, action, successorState);
-                    this.calculateAndSaveRewards(state,action,successorState);
-                }
-            }
-        }
+        this.calculateAndSaveTransitions();
+        this.calculateAndSaveRewards();
 
-    }
-
-/**
- * The getPossibleActionsForState function returns a set of possible actions for the given state.
- *
- * 
- * @param state Used to Determine the possible actions for a given state.
- * @return A set of possible actions for a given state.
- * 
- */
-    public Set<String> getPossibleActionsForState(String state){
-        Set<String> possibleActions = new HashSet<>();
-        if(world.getLocationStrings().contains(state)){
-            possibleActions.add("STAY");
-            StringBuilder builder = new StringBuilder();
-            for(String rS : world.getRoadStrings()){
-                StateRegistry roadStateReg = world.getRegistryFromStateKey(rS);
-                if(((Road)roadStateReg.getState()).getFromLocation().equals(state)){
-                    builder.append("TURN_ONTO_");
-                    builder.append(roadStateReg.getState().getName());
-                    possibleActions.add(builder.toString());
-                    builder.setLength(0);
-                }
-            }
-        }
-        if(world.getRoadStrings().contains(state)){
-            if(world.getRegistryFromStateKey(state).getSpeedAdjustment().equals("NONE")){
-                for(String a : world.getAccelerateActions().keySet())
-                possibleActions.add(a); 
-            }
-            else{
-                possibleActions.add("CRUISE");
-            }
-        }
-        return possibleActions;
-    }
-
-/**
- * The getPossibleResultingStates function returns a set of possible resulting states from the given state and action.
- *
- * 
- * @param state The state in which the action is chosen.
- * @param action The action.
- * @return A set of possible resulting states given a state and an action.
- * 
- */
-    public Set<String> getPossibleResultingStates(String state, String action){
-        Set<String> possibleResultStates = new HashSet<>();
-        StringBuilder builder = new StringBuilder();
-        // If the state is a location state check if the action is a turn onto action
-        if(world.getLocationStrings().contains(state)){
-            if(action.equals("STAY")){
-                possibleResultStates.add(state);
-            }else{
-                for(String roadKey : world.getRoadStrings()){
-                    StateRegistry roadReg = world.getRegistryFromStateKey(roadKey);
-                    if(((Road)roadReg.getState()).getFromLocation().equals(state)){
-                        if(roadReg.getSpeedAdjustment().equals("NONE")){
-                            builder.append("TURN_ONTO_");
-                            builder.append(roadReg.getState().getName());
-                            if(action.equals(builder.toString())){
-                                possibleResultStates.add(roadKey);
-                            }
-                            builder.setLength(0);
-                        }
-                    }  
-                }
-            }
-            
-        }else if(world.getRoadStrings().contains(state)){
-            StateRegistry roadReg = world.getRegistryFromStateKey(state);
-            if(roadReg.getSpeedAdjustment().equals("NONE")){
-                if(world.getAccelerateActions().keySet().contains(action)){
-                    StateRegistry tempReg = new StateRegistry(roadReg.getState(), world.getAccelerateActions().get(action), roadReg.getPedestrianTraffic());
-                    possibleResultStates.add(tempReg.toString());
-                }
-            }else if(roadReg.getSpeedAdjustment().equals("LOW") || roadReg.getSpeedAdjustment().equals("NORMAL") || roadReg.getSpeedAdjustment().equals("HIGH")){
-                if(action.equals("CRUISE")){
-                    possibleResultStates.add(((Road)roadReg.getState()).getToLocation());
-                }
-            }
-        }
-        return possibleResultStates;
     }
 
     public Double transitionFunction(String currentState, String action, String successorState){
@@ -172,30 +85,60 @@ public class SelfDrivingCarAgent {
         return 0.0;
     }
 
-    private void calculateAndSaveTransitions(String state, String action, String successorState){
-        Double t = transitionFunction(state, action, successorState);
+    private void calculateAndSaveTransitions(){
         
-        Map<String, Double> sPrimeToTransition= new HashMap<>();
-        sPrimeToTransition.put(successorState,t);
+        for( String state : world.getAllStateKeys()){
+            Map<String, Map<String,Double>> actionToSPrime = new HashMap<>();
+            for(String action : world.getPossibleActionsForState(state)){
+                Map<String, Double> sPrimeToTransition= new HashMap<>();
+                for(String successorState : world.getPossibleResultingStates(state, action)){
+                    Double t = transitionFunction(state, action, successorState);
+                    sPrimeToTransition.put(successorState,t);
 
-        Map<String, Map<String,Double>> actionToSPrime = new HashMap<>();
-        actionToSPrime.put(action,sPrimeToTransition);
+                }
+                actionToSPrime.put(action,sPrimeToTransition);
+            }
+            transitionsMap.put(state,actionToSPrime);
+        }
 
-        transitionsMap.put(state,actionToSPrime);
     }
 
 
-    private void calculateAndSaveRewards(String state, String action, String successorState){
+    private void calculateAndSaveRewards(){
         
-        EthicalRewardQuad quad = rewardCalculator.getEthicalReward(state, action, successorState);
 
-        Map<String, EthicalRewardQuad> sPrimeToQuad = new HashMap<>();
-        sPrimeToQuad.put(successorState,quad);
+        for( String state : world.getAllStateKeys()){
+            Map<String, Map<String, Map<String,Double>>> actionToSPrime = new HashMap<>();
+            for(String action : world.getPossibleActionsForState(state)){
+                Map<String, Map<String,Double>> sPrimeToQuint = new HashMap<>();
+                for(String successorState : world.getPossibleResultingStates(state, action)){
+                    Map<String, Double> quint = new HashMap<>();
 
-        Map<String, Map<String, EthicalRewardQuad>> actionToSPrime = new HashMap<>();
-        actionToSPrime.put(action,sPrimeToQuad);
-        
-        rewardsMap.put(state,actionToSPrime);
+                    EthicalRewardQuad quad = rewardCalculator.getEthicalReward(state, action, successorState);
+                    Double task = rewardCalculator.getTaskReward(state, action, successorState);
+
+                    quint.put("NABLA", Double.valueOf(quad.getNabla()));
+                    quint.put("TRIANGLE", Double.valueOf(quad.getTriangle()));
+                    quint.put("barredNABLA", Double.valueOf(quad.getBarredNabla()));
+                    quint.put("barredTRIANGLE", Double.valueOf(quad.getBarredTriangle()));
+                    quint.put("TASK",task);
+
+                    sPrimeToQuint.put(successorState,quint);
+
+                }
+                actionToSPrime.put(action,sPrimeToQuint);
+            }
+            rewardsMap.put(state,actionToSPrime);
+        }
+
+    }   
+
+    public Double getTransition(String state, String action, String successorState){
+        return transitionsMap.get(state).get(action).get(successorState);
+    }
+
+    public Map<String,Double> getReward(String state, String action, String successorState){
+        return rewardsMap.get(state).get(action).get(successorState);  
     }
 
  

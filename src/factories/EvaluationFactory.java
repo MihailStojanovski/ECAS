@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import agents.SelfDrivingCarAgent;
+import worlds.SelfDrivingCarWorld;
 
 public class EvaluationFactory {
     private List<Integer> context;
@@ -15,12 +16,12 @@ public class EvaluationFactory {
     // The moral evaluation of a state with the integer representing the associated moral value
     private Map<Integer,Map<String,Integer>> stateEval;
 
-    private SelfDrivingCarAgent agent;
+    private SelfDrivingCarWorld world;
 
 
-    public EvaluationFactory(List<Integer> context, SelfDrivingCarAgent agent){
+    public EvaluationFactory(List<Integer> context, SelfDrivingCarWorld world){
         this.context = context;
-        this.agent = agent;
+        this.world = world;
         this.stateActionEval = new HashMap<>();
         this.stateEval = new HashMap<>();
     }
@@ -28,7 +29,7 @@ public class EvaluationFactory {
     public void fillUpStateEvalWith(Integer evalValue){
         for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
             Map<String, Integer> stateEvalTemp = new HashMap<>();
-            for(String state : agent.getWorld().getAllStateKeys()){
+            for(String state : world.getAllStateKeys()){
                 stateEvalTemp.put(state,evalValue);
             }
             stateEval.put(contextValueIndex,stateEvalTemp);
@@ -38,9 +39,9 @@ public class EvaluationFactory {
     public void fillUpStateActionEvalWith(Integer evalValue){
         for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
             Map<String, Map<String, Integer>> stateActionEvalTemp = new HashMap<>();
-            for(String state : agent.getWorld().getAllStateKeys()){
+            for(String state : world.getAllStateKeys()){
                 Map<String, Integer> actionTemp = new HashMap<>();
-                for(String action : agent.getPossibleActionsForState(state)){
+                for(String action : world.getPossibleActionsForState(state)){
                     actionTemp.put(action, evalValue);
                 }
                 stateActionEvalTemp.put(state,actionTemp);

@@ -64,20 +64,21 @@ public class Main {
         List<Integer> context = new ArrayList<>();
         context.add(0);
         
-        SelfDrivingCarAgent agent = new SelfDrivingCarAgent(w2);
         
-        EvaluationFactory eF = new EvaluationFactory(context, agent);
+        EvaluationFactory eF = new EvaluationFactory(context, w2);
         eF.fillUpStateActionEvalWith(Integer.MAX_VALUE);
         eF.fillUpStateEvalWith(0);
-
+        
         eF.setStateEval("TRAIN_STATION", 1, 0);
-
+        
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
         Map<Integer,Map<String,Integer>> stateEval = eF.getStateEval();
+        
+        Reward ethicalReward = new EthicalReward(context, stateActionEval, stateEval, w2);
+        
+        SelfDrivingCarAgent agent = new SelfDrivingCarAgent(w2,ethicalReward);
 
-        Reward ethicalReward = new EthicalReward(context, stateActionEval, stateEval);
-
-        ValueIteration vi = new ValueIteration(agent, ethicalReward, 0.7, 0.1, 0.9);
+        ValueIteration vi = new ValueIteration(agent, w2, 0.7, 0.1, 0.9, 1.0 , 1. , 1., 1.);
         for(Entry<String, List<String>> e : vi.getPolicy().entrySet()){
             System.out.println(e);
         }

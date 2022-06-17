@@ -3,8 +3,10 @@ package worlds;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import states.Location;
 import states.Road;
@@ -105,6 +107,90 @@ public class SelfDrivingCarWorld {
 
     }// End Set up variables
 
+
+    /**
+ * The getPossibleActionsForState function returns a set of possible actions for the given state.
+ *
+ * 
+ * @param state Used to Determine the possible actions for a given state.
+ * @return A set of possible actions for a given state.
+ * 
+ */
+public Set<String> getPossibleActionsForState(String state){
+    Set<String> possibleActions = new HashSet<>();
+    if(locationStrings.contains(state)){
+        possibleActions.add("STAY");
+        StringBuilder builder = new StringBuilder();
+        for(String rS : roadStrings){
+            StateRegistry roadStateReg = getRegistryFromStateKey(rS);
+            if(((Road)roadStateReg.getState()).getFromLocation().equals(state)){
+                builder.append("TURN_ONTO_");
+                builder.append(roadStateReg.getState().getName());
+                possibleActions.add(builder.toString());
+                builder.setLength(0);
+            }
+        }
+    }
+    if(roadStrings.contains(state)){
+        if(getRegistryFromStateKey(state).getSpeedAdjustment().equals("NONE")){
+            for(String a : accelerateActions.keySet())
+            possibleActions.add(a); 
+        }
+        else{
+            possibleActions.add("CRUISE");
+        }
+    }
+    return possibleActions;
+}
+
+/**
+* The getPossibleResultingStates function returns a set of possible resulting states from the given state and action.
+*
+* 
+* @param state The state in which the action is chosen.
+* @param action The action.
+* @return A set of possible resulting states given a state and an action.
+* 
+*/
+public Set<String> getPossibleResultingStates(String state, String action){
+    Set<String> possibleResultStates = new HashSet<>();
+    StringBuilder builder = new StringBuilder();
+    // If the state is a location state check if the action is a turn onto action
+    if(locationStrings.contains(state)){
+        if(action.equals("STAY")){
+            possibleResultStates.add(state);
+        }else{
+            for(String roadKey : roadStrings){
+                StateRegistry roadReg = getRegistryFromStateKey(roadKey);
+                if(((Road)roadReg.getState()).getFromLocation().equals(state)){
+                    if(roadReg.getSpeedAdjustment().equals("NONE")){
+                        builder.append("TURN_ONTO_");
+                        builder.append(roadReg.getState().getName());
+                        if(action.equals(builder.toString())){
+                            possibleResultStates.add(roadKey);
+                        }
+                        builder.setLength(0);
+                    }
+                }  
+            }
+        }
+        
+    }else if(roadStrings.contains(state)){
+        StateRegistry roadReg = getRegistryFromStateKey(state);
+        if(roadReg.getSpeedAdjustment().equals("NONE")){
+            if(accelerateActions.keySet().contains(action)){
+                StateRegistry tempReg = new StateRegistry(roadReg.getState(), accelerateActions.get(action), roadReg.getPedestrianTraffic());
+                possibleResultStates.add(tempReg.toString());
+            }
+        }else if(roadReg.getSpeedAdjustment().equals("LOW") || roadReg.getSpeedAdjustment().equals("NORMAL") || roadReg.getSpeedAdjustment().equals("HIGH")){
+            if(action.equals("CRUISE")){
+                possibleResultStates.add(((Road)roadReg.getState()).getToLocation());
+            }
+        }
+    }
+    return possibleResultStates;
+}
+
     public List<String> getAllStateKeys(){
         return allStateKeys;
     }
@@ -119,6 +205,10 @@ public class SelfDrivingCarWorld {
 
     public Map<String, StateRegistry> getStateRegistryMap() {
         return stateRegistryMap;
+    }
+
+    public Map<String, Integer> getSpeedLimits() {
+        return speedLimits;
     }
 
     public Map<String, String> getAccelerateActions() {

@@ -13,23 +13,32 @@ import worlds.SelfDrivingCarWorld;
 public class ValueIteration {
 
     private SelfDrivingCarAgent agent;
-    private Reward ethicalRewardCalculator;
+    private SelfDrivingCarWorld world;
     private Double alpha;
     private Double convergenceAchieved;
     private Double gamma;
-    private SelfDrivingCarWorld world;
+    private Double epsilonBN;
+    private Double epsilonN;
+    private Double epsilonBT;
+    private Double epsilonT;
     
     private Map<String, Map<String, Double>> qHarm = new HashMap<>(); 
     private Map<String, Map<String, Double>> qGood = new HashMap<>(); 
     
     
-    public ValueIteration(SelfDrivingCarAgent agent, Reward ethicalRewardCalculator, Double alpha, Double convergenceAchieved,  Double gamma){
+    public ValueIteration(  SelfDrivingCarAgent agent, SelfDrivingCarWorld world, 
+                            Double alpha, Double convergenceAchieved,  Double gamma, 
+                            Double epsilonBN, Double epsilonN, 
+                            Double epsilonBT, Double epsilonT){
         this.agent = agent;
-        this.ethicalRewardCalculator = ethicalRewardCalculator;
+        this.world = world;
         this.alpha = alpha;
         this.convergenceAchieved = convergenceAchieved;
         this.gamma = gamma;
-        this.world = agent.getWorld();
+        this.epsilonBN = epsilonBN;
+        this.epsilonN = epsilonN;
+        this.epsilonBT = epsilonBT;
+        this.epsilonT = epsilonT;
 
     }
 
@@ -40,7 +49,7 @@ public class ValueIteration {
         for(String state : world.getAllStateKeys()){
             Map<String, Double> tempActionHarm = new HashMap<>();
             Map<String, Double> tempActionGood = new HashMap<>();
-            for(String action : agent.getPossibleActionsForState(state)){
+            for(String action : world.getPossibleActionsForState(state)){
                 tempActionHarm.put(action, 0.);
                 tempActionGood.put(action, 0.);
             }
@@ -64,7 +73,7 @@ public class ValueIteration {
             convGood = 0.;
             // Looping all states and possible actions
             for(String state : world.getAllStateKeys()){
-                for(String action : agent.getPossibleActionsForState(state)){
+                for(String action : world.getPossibleActionsForState(state)){
 
                     Double tempHarm = qHarm.get(state).get(action); 
                     Double tempGood = qGood.get(state).get(action); 
@@ -74,24 +83,32 @@ public class ValueIteration {
                     Double transitionProbability;
 
                     // Loop for all the possible resulting states for calculating the sum 
-                    for(String stateP : agent.getPossibleResultingStates(state, action)){
+                    for(String stateP : world.getPossibleResultingStates(state, action)){
                         transitionProbability = agent.transitionFunction(state, action, stateP);
 
                         Double minHarm = Double.MAX_VALUE;
                         Double maxGood = -Double.MAX_VALUE;
 
                         // Find the min and max value for the possible actions from the resulting state
-                        for(String actionP : agent.getPossibleActionsForState(stateP)){
+                        for(String actionP : world.getPossibleActionsForState(stateP)){
                             if(minHarm >= qHarm.get(stateP).get(actionP)){
                                 minHarm = qHarm.get(stateP).get(actionP);
                             }
                             if(maxGood <= qGood.get(stateP).get(actionP)){
                                 maxGood = qGood.get(stateP).get(actionP);
                             }
-                        }// End of loop for possible actions 
+                        }// End of loop for possible actions
+                        Map<String, Double> quint = agent.getReward(state, action, stateP);
+                        Double nabla = quint.get("NABLA");
+                        Double barredNabla = quint.get("barredNABLA");
+                        Double triangle = quint.get("TRIANGLE");
+                        Double barredTriangle = quint.get("barredTRIANGLE");
 
-                        qSumHarm += transitionProbability * (agent.rewardFunction(state, action, stateP, ethicalRewardCalculator, false) + gamma * minHarm);
-                        qSumGood += transitionProbability * (agent.rewardFunction(state, action, stateP, ethicalRewardCalculator, true) + gamma * maxGood);
+
+
+
+                        qSumHarm += transitionProbability * ((1 + epsilonN) * nabla - epsilonBN * barredNabla + gamma * minHarm);
+                        qSumGood += transitionProbability * (epsilonT * triangle - (1 + epsilonBT) * barredTriangle + gamma * maxGood);
                     }// End of loop for possible resulting states
 
                     // Set the new values for the state and action
@@ -111,7 +128,7 @@ public class ValueIteration {
         for(String state : world.getAllStateKeys()){
             List<String> stateActionsHarm = new ArrayList<>();
             Double minAction = Double.MAX_VALUE;
-            for(String action : agent.getPossibleActionsForState(state)){
+            for(String action : world.getPossibleActionsForState(state)){
                 Double qHarmValue = qHarm.get(state).get(action);
                 if(stateActionsHarm.isEmpty()){
                     stateActionsHarm.add(action);
