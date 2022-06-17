@@ -104,9 +104,6 @@ public class ValueIteration {
                         Double triangle = quint.get("TRIANGLE");
                         Double barredTriangle = quint.get("barredTRIANGLE");
 
-
-
-
                         qSumHarm += transitionProbability * ((1 + epsilonN) * nabla - epsilonBN * barredNabla + gamma * minHarm);
                         qSumGood += transitionProbability * (epsilonT * triangle - (1 + epsilonBT) * barredTriangle + gamma * maxGood);
                     }// End of loop for possible resulting states
