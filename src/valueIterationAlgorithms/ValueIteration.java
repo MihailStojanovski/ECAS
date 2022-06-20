@@ -106,6 +106,7 @@ public class ValueIteration {
 
                         qSumHarm += transitionProbability * ((1 + epsilonN) * nabla - epsilonBN * barredNabla + gamma * minHarm);
                         qSumGood += transitionProbability * (epsilonT * triangle - (1 + epsilonBT) * barredTriangle + gamma * maxGood);
+                        
                     }// End of loop for possible resulting states
 
                     // Set the new values for the state and action
@@ -119,8 +120,6 @@ public class ValueIteration {
             }// End of loop of all states and possible actions
         }// End of while
 
-
-        System.out.println(qHarm);
         Map<String, List<String>> policyHarm = new HashMap<>();
         for(String state : world.getAllStateKeys()){
             List<String> stateActionsHarm = new ArrayList<>();

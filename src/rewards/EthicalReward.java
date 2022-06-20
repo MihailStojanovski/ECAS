@@ -39,13 +39,6 @@ public class EthicalReward implements Reward {
         return Math.min(evalSA,evalSPrime);
     }
 
-    /*
-        PROBLEM:
-        The ethical evaluations need to have a value for each state, action, successor state for it to work this way.
-        POSSIBLE SOLUTION:
-        Make an ethical evaluation factory class that will take parameters and fill stuff up accordingly
-    
-    */
     @Override
     public EthicalRewardQuad getEthicalReward(String state, String action, String successorState) {
 
