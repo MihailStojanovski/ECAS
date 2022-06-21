@@ -24,6 +24,8 @@ public class ValueIteration {
     
     private Map<String, Map<String, Double>> qHarm = new HashMap<>(); 
     private Map<String, Map<String, Double>> qGood = new HashMap<>(); 
+    private Map<String, Map<String, Double>> qTask = new HashMap<>(); 
+
     
     
     public ValueIteration(  SelfDrivingCarAgent agent, SelfDrivingCarWorld world, 
@@ -49,12 +51,15 @@ public class ValueIteration {
         for(String state : world.getAllStateKeys()){
             Map<String, Double> tempActionHarm = new HashMap<>();
             Map<String, Double> tempActionGood = new HashMap<>();
+            Map<String, Double> tempActionTask = new HashMap<>();
             for(String action : world.getPossibleActionsForState(state)){
                 tempActionHarm.put(action, 0.);
                 tempActionGood.put(action, 0.);
+                tempActionTask.put(action, 0.);
             }
             qHarm.put(state, tempActionHarm);
             qGood.put(state, tempActionGood);
+            qTask.put(state, tempActionTask);
         }
 
         // Setting the goal state and action STAY to -Card(S) and Card(S) respectively for harm and good
@@ -77,9 +82,11 @@ public class ValueIteration {
 
                     Double tempHarm = qHarm.get(state).get(action); 
                     Double tempGood = qGood.get(state).get(action); 
+                    Double tempTask = qTask.get(state).get(action);
 
                     Double qSumHarm = 0.;
                     Double qSumGood = 0.;
+                    Double qSumTask = 0.;
                     Double transitionProbability;
 
                     // Loop for all the possible resulting states for calculating the sum 
@@ -88,11 +95,15 @@ public class ValueIteration {
 
                         Double minHarm = Double.MAX_VALUE;
                         Double maxGood = -Double.MAX_VALUE;
+                        Double minTask = Double.MAX_VALUE;
 
                         // Find the min and max value for the possible actions from the resulting state
                         for(String actionP : world.getPossibleActionsForState(stateP)){
                             if(minHarm >= qHarm.get(stateP).get(actionP)){
                                 minHarm = qHarm.get(stateP).get(actionP);
+                            }
+                            if(minTask >= qTask.get(stateP).get(actionP)){
+                                minTask = qTask.get(stateP).get(actionP);
                             }
                             if(maxGood <= qGood.get(stateP).get(actionP)){
                                 maxGood = qGood.get(stateP).get(actionP);
@@ -103,15 +114,18 @@ public class ValueIteration {
                         Double barredNabla = quint.get("barredNABLA");
                         Double triangle = quint.get("TRIANGLE");
                         Double barredTriangle = quint.get("barredTRIANGLE");
+                        Double taskReward = quint.get("TASK");
 
                         qSumHarm += transitionProbability * ((1 + epsilonN) * nabla - epsilonBN * barredNabla + gamma * minHarm);
                         qSumGood += transitionProbability * (epsilonT * triangle - (1 + epsilonBT) * barredTriangle + gamma * maxGood);
+                        qSumTask += transitionProbability * (taskReward + gamma * minTask);
                         
                     }// End of loop for possible resulting states
 
                     // Set the new values for the state and action
                     qHarm.get(state).replace(action, qSumHarm);
                     qGood.get(state).replace(action, qSumGood);
+                    qTask.get(state).replace(action,qSumTask);
 
                     convHarm = Math.max(convHarm, Math.abs(tempHarm - qHarm.get(state).get(action)));
                     convGood = Math.max(convGood, Math.abs(tempGood - qGood.get(state).get(action)));
@@ -120,6 +134,9 @@ public class ValueIteration {
             }// End of loop of all states and possible actions
         }// End of while
 
+
+        // Policy extraction w.r.t. harm
+        /*
         Map<String, List<String>> policyHarm = new HashMap<>();
         for(String state : world.getAllStateKeys()){
             List<String> stateActionsHarm = new ArrayList<>();
@@ -138,8 +155,8 @@ public class ValueIteration {
                 }
             }
             policyHarm.put(state, stateActionsHarm);
-        }
-
+        }*/
+        
 
         // Policy extraction w.r.t. good
         // Map<String, List<String>> policyGood = new HashMap<>();
@@ -162,8 +179,31 @@ public class ValueIteration {
         //     policyGood.put(e.getKey(), stateActionsGood);
         // }
 
+
+        // Task Policy Extraction
+        
+        Map<String, List<String>> policyTask = new HashMap<>();
+        for(String state : world.getAllStateKeys()){
+            List<String> stateActionsTask = new ArrayList<>();
+            Double minAction = Double.MAX_VALUE;
+            for(String action : world.getPossibleActionsForState(state)){
+                Double qTaskValue = qTask.get(state).get(action);
+                if(stateActionsTask.isEmpty()){
+                    stateActionsTask.add(action);
+                    minAction = qTaskValue;
+                }else if(minAction.equals(qTaskValue)){
+                    stateActionsTask.add(action);
+                }else if(minAction > qTaskValue){
+                    stateActionsTask.clear();
+                    stateActionsTask.add(action);
+                    minAction = qTaskValue;
+                }
+            }
+            policyTask.put(state, stateActionsTask);
+        }
+        
         System.out.println(counter);
-        return policyHarm;
+        return policyTask;
     }
 
 
