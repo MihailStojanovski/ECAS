@@ -1,9 +1,12 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -13,10 +16,9 @@ import states.State;
 import valueIterationAlgorithms.ValueIteration;
 import agents.SelfDrivingCarAgent;
 import factories.EvaluationFactory;
-import factories.ForbiddenStateProfile;
+import factories.StateProfile;
 import parsers.WorldMapParser;
-import rewards.EthicalReward;
-import rewards.Reward;
+import rewards.RewardCalculator;
 import worlds.SelfDrivingCarWorld;
 
 public class Main {
@@ -66,26 +68,47 @@ public class Main {
         context.add(0);
         context.add(0);
         
-        // Forbidden state profiles for DCT as explained in the original paper
-        ForbiddenStateProfile hazardous = new ForbiddenStateProfile("ALL", "ALL", "HIGH", "ALL");
-        ForbiddenStateProfile inconsiderate = new ForbiddenStateProfile("ALL", "ALL", "NORMAL", "HEAVY");
+        // Forbidden state profiles for DCT as explained in the original paper Hazardous(H) and Inconsiderate(I)
+        StateProfile hazardous = new StateProfile("ALL", "ALL", "HIGH", "ALL");
+        StateProfile inconsiderate = new StateProfile("ALL", "ALL", "NORMAL", "HEAVY");
         
-        List<ForbiddenStateProfile> profileList = new ArrayList<>();
+        List<StateProfile> profileList = new ArrayList<>();
         profileList.add(hazardous);
         profileList.add(inconsiderate);
 
+        // PFD definitions of duties
+        Map<Integer, Map<StateProfile, String>> contextToDuties = new HashMap<>();
+
+        StateProfile smoothOperationState = new StateProfile("ALL", "ALL", "NONE", "LIGHT");
+        String smoothOperationAction = "TO_HIGH ORRR TO_NORMAL";
+        Map<StateProfile, String> sO = new HashMap<>();
+        sO.put(smoothOperationState, smoothOperationAction);
+        contextToDuties.put(0,sO);
+
+        StateProfile carefulOperationState = new StateProfile("ALL", "ALL", "NONE", "HEAVY");
+        String carefulOperationAction = "TO_LOW";
+        Map<StateProfile, String> cO = new HashMap<>();
+        cO.put(carefulOperationState, carefulOperationAction);
+        contextToDuties.put(1,cO);
+
+
+        // Evaluation factory setup
         EvaluationFactory eF = new EvaluationFactory(context, parsedWorld);
-        eF.createDCTevals(profileList);
-        
-        
+
+        // Create evaluations for DCT with H and I
+        // eF.createDCTevals(profileList);
+
+        eF.createPFDevals(contextToDuties);
+
+               
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
         Map<Integer,Map<String,Integer>> stateEval = eF.getStateEval();
         
-        Reward ethicalReward = new EthicalReward(context, stateActionEval, stateEval, parsedWorld);
+        RewardCalculator ethicalReward = new RewardCalculator(context, stateActionEval, stateEval, parsedWorld);
         
         SelfDrivingCarAgent agent = new SelfDrivingCarAgent(parsedWorld,ethicalReward);
 
-        ValueIteration vi = new ValueIteration(agent, parsedWorld, 0.7, 0.1, 0.9, 1.0 , 1. , 1., 1.);
+        ValueIteration vi = new ValueIteration(agent, parsedWorld, 0.7, 0.1, 0.9, 1. , 1. , 1., 1.);
         for(Entry<String, List<String>> e : vi.getPolicy().entrySet()){
             System.out.println(e);
         }

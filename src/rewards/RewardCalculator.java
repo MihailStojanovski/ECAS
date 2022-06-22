@@ -7,7 +7,7 @@ import states.Road;
 import states.StateRegistry;
 import worlds.SelfDrivingCarWorld;
 
-public class EthicalReward implements Reward {
+public class RewardCalculator{
 
 
     private Double stayingTime = 120.;
@@ -26,7 +26,7 @@ public class EthicalReward implements Reward {
 
     private SelfDrivingCarWorld world;
 
-    public EthicalReward(List<Integer> context, Map<Integer,Map<String,Map<String,Integer>>> stateActionEval, Map<Integer,Map<String,Integer>> stateEval, SelfDrivingCarWorld world) {
+    public RewardCalculator(List<Integer> context, Map<Integer,Map<String,Map<String,Integer>>> stateActionEval, Map<Integer,Map<String,Integer>> stateEval, SelfDrivingCarWorld world) {
         this.context = context;
         this.stateActionEval = stateActionEval;
         this.stateEval = stateEval;
@@ -39,7 +39,6 @@ public class EthicalReward implements Reward {
         return Math.min(evalSA,evalSPrime);
     }
 
-    @Override
     public EthicalRewardQuad getEthicalReward(String state, String action, String successorState) {
 
         EthicalRewardQuad quad = new EthicalRewardQuad();
@@ -66,7 +65,6 @@ public class EthicalReward implements Reward {
         return quad;  
     }
 
-    @Override
     public Double getTaskReward(String currentState, String action, String successorState){
 
         StateRegistry currentStateRegistry = world.getRegistryFromStateKey(currentState);

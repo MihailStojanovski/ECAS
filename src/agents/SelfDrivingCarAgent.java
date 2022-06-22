@@ -7,9 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import rewards.EthicalReward;
+import rewards.RewardCalculator;
 import rewards.EthicalRewardQuad;
-import rewards.Reward;
 import states.Location;
 import states.Road;
 import states.State;
@@ -26,20 +25,14 @@ import static java.util.Map.entry;
  * SelfDrivingCarAgent
  */
 public class SelfDrivingCarAgent {
-
-
-    private final Double stayingTime = 120.;
-    private final Double turningTime = 5.;
-    private final Double accelerationRate = 2.;
-    private final Double driverErrorPenalty = 3600.;
     
     private SelfDrivingCarWorld world;
-    private Reward rewardCalculator;
+    private RewardCalculator rewardCalculator;
 
     private Map<String, Map<String, Map<String, Double>>> transitionsMap;
     private Map<String, Map<String, Map<String, Map<String, Double>>>> rewardsMap;
 
-    public SelfDrivingCarAgent(SelfDrivingCarWorld world, Reward rewardCalculator){
+    public SelfDrivingCarAgent(SelfDrivingCarWorld world, RewardCalculator rewardCalculator){
         this.world = world;
         this.rewardCalculator = rewardCalculator;
         this.transitionsMap = new HashMap<>();

@@ -1,6 +1,6 @@
 package factories;
 
-public class ForbiddenStateProfile {
+public class StateProfile {
     String name;
     String type;
     
@@ -16,7 +16,7 @@ public class ForbiddenStateProfile {
 
 
 
-    public ForbiddenStateProfile(String name, String type, String speedAdjustment, String pedestrianTraffic){
+    public StateProfile(String name, String type, String speedAdjustment, String pedestrianTraffic){
         this.name = name;
         this.type = type;
         this.speedAdjustment = speedAdjustment;

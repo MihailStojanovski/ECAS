@@ -108,14 +108,7 @@ public class SelfDrivingCarWorld {
     }// End Set up variables
 
 
-    /**
- * The getPossibleActionsForState function returns a set of possible actions for the given state.
- *
- * 
- * @param state Used to Determine the possible actions for a given state.
- * @return A set of possible actions for a given state.
- * 
- */
+
 public Set<String> getPossibleActionsForState(String state){
     Set<String> possibleActions = new HashSet<>();
     if(locationStrings.contains(state)){

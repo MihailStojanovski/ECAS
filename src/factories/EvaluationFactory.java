@@ -6,7 +6,11 @@ import java.util.Map;
 import states.Road;
 import states.StateRegistry;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import worlds.SelfDrivingCarWorld;
 
@@ -58,12 +62,12 @@ public class EvaluationFactory {
     // to sort out the ALL and a specific value for the ForbiddenProfile attributes.
 
 
-    public void createDCTevals(List<ForbiddenStateProfile> profileList){
+    public void createDCTevals(List<StateProfile> profileList){
 
         fillUpStateActionEvalWith(Integer.MAX_VALUE);
         fillUpStateEvalWith(0);
 
-        for(ForbiddenStateProfile p : profileList){
+        for(StateProfile p : profileList){
             List<String> allStates = world.getAllStateKeys();
             for(String state : allStates){
 
@@ -104,8 +108,87 @@ public class EvaluationFactory {
         }
     }
 
+    // ------------------------------- End DCT -------------------------------
 
-    // ------------------------------ End DCT ------------------------------
+    // ------------------------------ Start PFD ------------------------------
+
+    // Context Index -> State Profile in which the duty is applied -> action which fulfills the duty
+
+    public void createPFDevals(Map<Integer,Map<StateProfile,String>> contextToDuties){
+        fillUpStateActionEvalWith(Integer.MAX_VALUE);
+        fillUpStateEvalWith(Integer.MAX_VALUE);
+
+        for(Map.Entry<Integer,Map<StateProfile,String>> entry : contextToDuties.entrySet()){
+
+            int contextValueIndex = entry.getKey();
+            Map<StateProfile,String> duties = entry.getValue();
+            for(Map.Entry<StateProfile, String> d : duties.entrySet()){
+                
+                StateProfile stateProfile = d.getKey();
+                String dutyAction = d.getValue();
+                List<String> allStates = world.getAllStateKeys();
+                for(String state : allStates){
+
+                    int neglectCounter = 0;
+                    StateRegistry reg = world.getRegistryFromStateKey(state);
+                    
+                    if(stateProfile.getName().equals("ALL")){
+                        neglectCounter++;
+                    }else if(stateProfile.getName().equals(reg.getState().getName())){
+                        neglectCounter++;
+                    }
+                    
+                    if(reg.getState() instanceof Road){
+
+                        if(stateProfile.getType().equals("ALL")){
+                            neglectCounter++;
+                        }else if(stateProfile.getType().equals(((Road)reg.getState()).getType())){
+                            neglectCounter++;
+                        }
+
+                        if(stateProfile.getSpeedAdjustment().equals("ALL")){
+                            neglectCounter++;
+                        }else if(stateProfile.getSpeedAdjustment().equals(reg.getSpeedAdjustment())){
+                            neglectCounter++;
+                        }
+
+                        if(stateProfile.getPedestrianTraffic().equals("ALL")){
+                            neglectCounter++;
+                        }else if(stateProfile.getPedestrianTraffic().equals(reg.getPedestrianTraffic())){
+                            neglectCounter++;
+                        }
+                    }
+                    
+                    List<String> dutyActionsSeparated = new LinkedList<>();
+                    if(dutyAction.contains("ORRR")){
+                        dutyActionsSeparated = new LinkedList<String>(Arrays.asList(dutyAction.split(" ")));
+                        dutyActionsSeparated.removeAll(Collections.singleton("ORRR"));
+                    }else{
+                        dutyActionsSeparated.add(dutyAction);
+                    }
+                    
+                    List<String> possibleActions = new ArrayList<>(world.getPossibleActionsForState(state));
+                    if(possibleActions.containsAll(dutyActionsSeparated)){
+                        
+                        for(String action : possibleActions){
+                            int actionNeglectCounter = neglectCounter;
+                            if(!dutyActionsSeparated.contains(action)){
+                                actionNeglectCounter++;
+                            }
+                            if(actionNeglectCounter == 5){
+                                setStateActionEval(state, action, 1, contextValueIndex);
+                            }
+                        }
+                    }
+
+
+                    
+                }
+            }
+        }
+    }
+
+    // ------------------------------- End PFD -------------------------------
 
     public void setStateEval(String state, Integer evaluation, Integer contextValueIndex){
         stateEval.get(contextValueIndex).replace(state, evaluation);

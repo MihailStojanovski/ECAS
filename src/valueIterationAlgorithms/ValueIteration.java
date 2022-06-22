@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import agents.SelfDrivingCarAgent;
-import rewards.Reward;
 import worlds.SelfDrivingCarWorld;
 
 public class ValueIteration {
@@ -82,7 +81,7 @@ public class ValueIteration {
 
                     Double tempHarm = qHarm.get(state).get(action); 
                     Double tempGood = qGood.get(state).get(action); 
-                    Double tempTask = qTask.get(state).get(action);
+                    //Double tempTask = qTask.get(state).get(action);
 
                     Double qSumHarm = 0.;
                     Double qSumGood = 0.;
@@ -134,9 +133,10 @@ public class ValueIteration {
             }// End of loop of all states and possible actions
         }// End of while
 
+        System.out.println(qHarm);
 
         // Policy extraction w.r.t. harm
-        /*
+        
         Map<String, List<String>> policyHarm = new HashMap<>();
         for(String state : world.getAllStateKeys()){
             List<String> stateActionsHarm = new ArrayList<>();
@@ -155,10 +155,11 @@ public class ValueIteration {
                 }
             }
             policyHarm.put(state, stateActionsHarm);
-        }*/
+        }
         
 
         // Policy extraction w.r.t. good
+
         // Map<String, List<String>> policyGood = new HashMap<>();
         // for(Entry<String, List<String>> e : policyHarm.entrySet()){
         //     List<String> stateActionsGood = new ArrayList<>();
@@ -182,28 +183,28 @@ public class ValueIteration {
 
         // Task Policy Extraction
         
-        Map<String, List<String>> policyTask = new HashMap<>();
-        for(String state : world.getAllStateKeys()){
-            List<String> stateActionsTask = new ArrayList<>();
-            Double minAction = Double.MAX_VALUE;
-            for(String action : world.getPossibleActionsForState(state)){
-                Double qTaskValue = qTask.get(state).get(action);
-                if(stateActionsTask.isEmpty()){
-                    stateActionsTask.add(action);
-                    minAction = qTaskValue;
-                }else if(minAction.equals(qTaskValue)){
-                    stateActionsTask.add(action);
-                }else if(minAction > qTaskValue){
-                    stateActionsTask.clear();
-                    stateActionsTask.add(action);
-                    minAction = qTaskValue;
-                }
-            }
-            policyTask.put(state, stateActionsTask);
-        }
+        // Map<String, List<String>> policyTask = new HashMap<>();
+        // for(String state : world.getAllStateKeys()){
+        //     List<String> stateActionsTask = new ArrayList<>();
+        //     Double minAction = Double.MAX_VALUE;
+        //     for(String action : world.getPossibleActionsForState(state)){
+        //         Double qTaskValue = qTask.get(state).get(action);
+        //         if(stateActionsTask.isEmpty()){
+        //             stateActionsTask.add(action);
+        //             minAction = qTaskValue;
+        //         }else if(minAction.equals(qTaskValue)){
+        //             stateActionsTask.add(action);
+        //         }else if(minAction > qTaskValue){
+        //             stateActionsTask.clear();
+        //             stateActionsTask.add(action);
+        //             minAction = qTaskValue;
+        //         }
+        //     }
+        //     policyTask.put(state, stateActionsTask);
+        // }
         
         System.out.println(counter);
-        return policyTask;
+        return policyHarm;
     }
 
 
