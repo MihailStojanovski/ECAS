@@ -133,29 +133,29 @@ public class ValueIteration {
             }// End of loop of all states and possible actions
         }// End of while
 
-        System.out.println(qHarm);
+        //System.out.println(qTask);
 
         // Policy extraction w.r.t. harm
         
-        Map<String, List<String>> policyHarm = new HashMap<>();
-        for(String state : world.getAllStateKeys()){
-            List<String> stateActionsHarm = new ArrayList<>();
-            Double minAction = Double.MAX_VALUE;
-            for(String action : world.getPossibleActionsForState(state)){
-                Double qHarmValue = qHarm.get(state).get(action);
-                if(stateActionsHarm.isEmpty()){
-                    stateActionsHarm.add(action);
-                    minAction = qHarmValue;
-                }else if(minAction.equals(qHarmValue)){
-                    stateActionsHarm.add(action);
-                }else if(minAction > qHarmValue){
-                    stateActionsHarm.clear();
-                    stateActionsHarm.add(action);
-                    minAction = qHarmValue;
-                }
-            }
-            policyHarm.put(state, stateActionsHarm);
-        }
+        // Map<String, List<String>> policyHarm = new HashMap<>();
+        // for(String state : world.getAllStateKeys()){
+        //     List<String> stateActionsHarm = new ArrayList<>();
+        //     Double minAction = Double.MAX_VALUE;
+        //     for(String action : world.getPossibleActionsForState(state)){
+        //         Double qHarmValue = qHarm.get(state).get(action);
+        //         if(stateActionsHarm.isEmpty()){
+        //             stateActionsHarm.add(action);
+        //             minAction = qHarmValue;
+        //         }else if(minAction.equals(qHarmValue)){
+        //             stateActionsHarm.add(action);
+        //         }else if(minAction > qHarmValue){
+        //             stateActionsHarm.clear();
+        //             stateActionsHarm.add(action);
+        //             minAction = qHarmValue;
+        //         }
+        //     }
+        //     policyHarm.put(state, stateActionsHarm);
+        // }
         
 
         // Policy extraction w.r.t. good
@@ -183,28 +183,40 @@ public class ValueIteration {
 
         // Task Policy Extraction
         
-        // Map<String, List<String>> policyTask = new HashMap<>();
-        // for(String state : world.getAllStateKeys()){
-        //     List<String> stateActionsTask = new ArrayList<>();
-        //     Double minAction = Double.MAX_VALUE;
-        //     for(String action : world.getPossibleActionsForState(state)){
-        //         Double qTaskValue = qTask.get(state).get(action);
-        //         if(stateActionsTask.isEmpty()){
-        //             stateActionsTask.add(action);
-        //             minAction = qTaskValue;
-        //         }else if(minAction.equals(qTaskValue)){
-        //             stateActionsTask.add(action);
-        //         }else if(minAction > qTaskValue){
-        //             stateActionsTask.clear();
-        //             stateActionsTask.add(action);
-        //             minAction = qTaskValue;
-        //         }
-        //     }
-        //     policyTask.put(state, stateActionsTask);
-        // }
+        Map<String, List<String>> policyTask = new HashMap<>();
+        for(String state : world.getAllStateKeys()){
+            List<String> stateActionsTask = new ArrayList<>();
+            Double minAction = Double.MAX_VALUE;
+            for(String action : world.getPossibleActionsForState(state)){
+                Double qTaskValue = qTask.get(state).get(action);
+                if(stateActionsTask.isEmpty()){
+                    stateActionsTask.add(action);
+                    minAction = qTaskValue;
+                }else if(minAction.equals(qTaskValue)){
+                    stateActionsTask.add(action);
+                }else if(minAction > qTaskValue){
+                    stateActionsTask.clear();
+                    stateActionsTask.add(action);
+                    minAction = qTaskValue;
+                }
+            }
+            policyTask.put(state, stateActionsTask);
+        }
         
         System.out.println(counter);
-        return policyHarm;
+        return policyTask;
+    }
+
+    public Map<String, Map<String, Double>> getqGood() {
+        return qGood;
+    }
+
+    public Map<String, Map<String, Double>> getqHarm() {
+        return qHarm;
+    }
+
+    public Map<String, Map<String, Double>> getqTask() {
+        return qTask;
     }
 
 
