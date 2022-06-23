@@ -137,25 +137,25 @@ public class ValueIteration {
 
         // Policy extraction w.r.t. harm
         
-        // Map<String, List<String>> policyHarm = new HashMap<>();
-        // for(String state : world.getAllStateKeys()){
-        //     List<String> stateActionsHarm = new ArrayList<>();
-        //     Double minAction = Double.MAX_VALUE;
-        //     for(String action : world.getPossibleActionsForState(state)){
-        //         Double qHarmValue = qHarm.get(state).get(action);
-        //         if(stateActionsHarm.isEmpty()){
-        //             stateActionsHarm.add(action);
-        //             minAction = qHarmValue;
-        //         }else if(minAction.equals(qHarmValue)){
-        //             stateActionsHarm.add(action);
-        //         }else if(minAction > qHarmValue){
-        //             stateActionsHarm.clear();
-        //             stateActionsHarm.add(action);
-        //             minAction = qHarmValue;
-        //         }
-        //     }
-        //     policyHarm.put(state, stateActionsHarm);
-        // }
+        Map<String, List<String>> policyHarm = new HashMap<>();
+        for(String state : world.getAllStateKeys()){
+            List<String> stateActionsHarm = new ArrayList<>();
+            Double minAction = Double.MAX_VALUE;
+            for(String action : world.getPossibleActionsForState(state)){
+                Double qHarmValue = qHarm.get(state).get(action);
+                if(stateActionsHarm.isEmpty()){
+                    stateActionsHarm.add(action);
+                    minAction = qHarmValue;
+                }else if(minAction.equals(qHarmValue)){
+                    stateActionsHarm.add(action);
+                }else if(minAction > qHarmValue){
+                    stateActionsHarm.clear();
+                    stateActionsHarm.add(action);
+                    minAction = qHarmValue;
+                }
+            }
+            policyHarm.put(state, stateActionsHarm);
+        }
         
 
         // Policy extraction w.r.t. good

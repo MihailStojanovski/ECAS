@@ -93,14 +93,14 @@ public class RewardCalculator{
             if(world.getRoadStrings().contains(successorState) && world.getAccelerateActions().containsKey(action)){
                 if(currentStateRegistry.getSpeedAdjustment().equals("NONE") && !successorStateRegistry.getSpeedAdjustment().equals("NONE")){
                     int speed = world.getSpeedLimits().get(((Road)world.getRegistryFromStateKey(currentState).getState()).getType());
-                    return accelerationRate * speed / 10;
+                    return accelerationRate * speed / 10.;
                 }
             }
             if(world.getLocationStrings().contains(successorState) && action.equals("CRUISE")){
                 if(!currentStateRegistry.getSpeedAdjustment().equals("NONE")){
                     Double speed = world.getSpeedLimits().get(((Road)world.getRegistryFromStateKey(currentState).getState()).getType()) + Double.valueOf(world.getSpeedAdjustments().get(world.getRegistryFromStateKey(currentState).getSpeedAdjustment()));
                     Double distance = ((Road)world.getRegistryFromStateKey(currentState).getState()).getLength();
-                    return 3600 * distance / speed;
+                    return 3600.0 * distance / speed;
                 }
             }
         }

@@ -96,9 +96,9 @@ public class Main {
         EvaluationFactory eF = new EvaluationFactory(context, parsedWorld);
 
         // Create evaluations for DCT with H and I
-        eF.createDCTevals(profileList);
+        //eF.createDCTevals(profileList);
 
-        // eF.createPFDevals(contextToDuties);
+        eF.createPFDevals(contextToDuties);
 
                
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
@@ -108,10 +108,12 @@ public class Main {
         
         SelfDrivingCarAgent agent = new SelfDrivingCarAgent(parsedWorld,ethicalReward);
 
-        ValueIteration vi = new ValueIteration(agent, parsedWorld, 0.7, 0.1, 0.9, 1. , 1. , 0., 0.);
+        ValueIteration vi = new ValueIteration(agent, parsedWorld, 0.7, 0.1, 0.999, 1. , 1. , 0., 0.);
         for(Entry<String, List<String>> e : vi.getPolicy().entrySet()){
             System.out.println(e);
         }
+
+        System.out.println(vi.getqTask().get("HOME"));
 
     }
 
