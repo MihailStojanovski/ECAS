@@ -108,7 +108,7 @@ public class Main {
         
         SelfDrivingCarAgent agent = new SelfDrivingCarAgent(parsedWorld,ethicalReward);
 
-        ValueIteration vi = new ValueIteration(agent, parsedWorld, 0.7, 0.1, 0.999, 1. , 1. , 0., 0.);
+        ValueIteration vi = new ValueIteration(agent, parsedWorld, 0.7, 0.1, 0.99, 1. , 1. , 0., 0.);
         for(Entry<String, List<String>> e : vi.getPolicy().entrySet()){
             System.out.println(e);
         }

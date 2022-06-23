@@ -67,21 +67,26 @@ public class ValueIteration {
 
         Double convHarm = Double.MAX_VALUE;
         Double convGood = Double.MAX_VALUE;
+        Double convTask = Double.MAX_VALUE;
+
+        Double convMax = Double.MAX_VALUE;
+
 
         int counter = 0;
 
         // Start of while
-        while( (alpha * convHarm + (1 - alpha) * convGood) > convergenceAchieved){
+        while( convMax > convergenceAchieved){
             counter++;
             convHarm = 0.;
             convGood = 0.;
+            convTask = 0.;
             // Looping all states and possible actions
             for(String state : world.getAllStateKeys()){
                 for(String action : world.getPossibleActionsForState(state)){
 
                     Double tempHarm = qHarm.get(state).get(action); 
                     Double tempGood = qGood.get(state).get(action); 
-                    //Double tempTask = qTask.get(state).get(action);
+                    Double tempTask = qTask.get(state).get(action);
 
                     Double qSumHarm = 0.;
                     Double qSumGood = 0.;
@@ -128,6 +133,10 @@ public class ValueIteration {
 
                     convHarm = Math.max(convHarm, Math.abs(tempHarm - qHarm.get(state).get(action)));
                     convGood = Math.max(convGood, Math.abs(tempGood - qGood.get(state).get(action)));
+                    convTask = Math.max(convTask, Math.abs(tempTask - qTask.get(state).get(action)));
+
+                    convMax = Math.max(convGood, Math.max(convHarm, convTask));
+
 
                 }
             }// End of loop of all states and possible actions
@@ -137,25 +146,25 @@ public class ValueIteration {
 
         // Policy extraction w.r.t. harm
         
-        Map<String, List<String>> policyHarm = new HashMap<>();
-        for(String state : world.getAllStateKeys()){
-            List<String> stateActionsHarm = new ArrayList<>();
-            Double minAction = Double.MAX_VALUE;
-            for(String action : world.getPossibleActionsForState(state)){
-                Double qHarmValue = qHarm.get(state).get(action);
-                if(stateActionsHarm.isEmpty()){
-                    stateActionsHarm.add(action);
-                    minAction = qHarmValue;
-                }else if(minAction.equals(qHarmValue)){
-                    stateActionsHarm.add(action);
-                }else if(minAction > qHarmValue){
-                    stateActionsHarm.clear();
-                    stateActionsHarm.add(action);
-                    minAction = qHarmValue;
-                }
-            }
-            policyHarm.put(state, stateActionsHarm);
-        }
+        // Map<String, List<String>> policyHarm = new HashMap<>();
+        // for(String state : world.getAllStateKeys()){
+        //     List<String> stateActionsHarm = new ArrayList<>();
+        //     Double minAction = Double.MAX_VALUE;
+        //     for(String action : world.getPossibleActionsForState(state)){
+        //         Double qHarmValue = qHarm.get(state).get(action);
+        //         if(stateActionsHarm.isEmpty()){
+        //             stateActionsHarm.add(action);
+        //             minAction = qHarmValue;
+        //         }else if(minAction.equals(qHarmValue)){
+        //             stateActionsHarm.add(action);
+        //         }else if(minAction > qHarmValue){
+        //             stateActionsHarm.clear();
+        //             stateActionsHarm.add(action);
+        //             minAction = qHarmValue;
+        //         }
+        //     }
+        //     policyHarm.put(state, stateActionsHarm);
+        // }
         
 
         // Policy extraction w.r.t. good
