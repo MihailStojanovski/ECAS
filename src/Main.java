@@ -1,18 +1,13 @@
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import states.Location;
 import states.Road;
 import states.State;
+import valueIterationAlgorithms.PolicyExtractor;
 import valueIterationAlgorithms.ValueIteration;
 import agents.SelfDrivingCarAgent;
 import factories.EvaluationFactory;
@@ -96,9 +91,9 @@ public class Main {
         EvaluationFactory eF = new EvaluationFactory(context, parsedWorld);
 
         // Create evaluations for DCT with H and I
-        //eF.createDCTevals(profileList);
+        eF.createDCTevals(profileList);
 
-        eF.createPFDevals(contextToDuties);
+        //eF.createPFDevals(contextToDuties);
 
                
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
@@ -108,13 +103,44 @@ public class Main {
         
         SelfDrivingCarAgent agent = new SelfDrivingCarAgent(parsedWorld,ethicalReward);
 
-        ValueIteration vi = new ValueIteration(agent, parsedWorld, 0.7, 0.1, 0.99, 1. , 1. , 0., 0.);
-        for(Entry<String, List<String>> e : vi.getPolicy().entrySet()){
-            System.out.println(e);
+        // If gamma is 0.9, even with convergence choosing the maximum between the three criteria when at the state home the agent chooses to go to the wrong street (MATOON_STREET_REVERSED)
+        // Decreasing the convergenceAchieved also gives us the correct entry (even with a gamma of 0.9)
+        ValueIteration vi = new ValueIteration(agent, parsedWorld, 0.7, 0.01, 0.9, 1. , 1. , 0., 0.);
+        
+        vi.calculateQValues();
+
+        Map<String, Map<String, Double>> qHarm = vi.getqHarm();
+        Map<String, Map<String, Double>> qGood = vi.getqGood();
+        Map<String, Map<String, Double>> qTask = vi.getqTask();
+
+        Map<String, List<String>> genericExtractionTarget = parsedWorld.getMapOfStatesAndActions();
+        PolicyExtractor pE = new PolicyExtractor();
+        Map<String, List<String>> policyHarm = pE.minimizingExtractor(genericExtractionTarget, qHarm);
+
+        Map<String, List<String>> policyHarmTask = pE.minimizingExtractor(policyHarm, qTask);
+
+        Map<String, List<String>> policyGood = pE.maximizingExtractor(genericExtractionTarget, qGood);
+
+        Map<String, List<String>> policyTask = pE.minimizingExtractor(genericExtractionTarget, qTask); 
+        
+        Map<String, Double> vTask = vi.getVforPolicy(policyTask);
+        Map<String, Double> vHarm = vi.getVforPolicy(policyHarm);
+
+
+        // Null appears in COLLEGE_STREET_REVERSED_CITY_HIGH_HEAVY
+        
+        Double maxDiff = Double.MAX_VALUE;
+        String diffState = "";
+        for(String state : parsedWorld.getAllStateKeys()){
+            System.out.println("State : " + state + " vHarm : " + vHarm.get(state) + " vTask : " + vTask.get(state));
+            if(maxDiff < vHarm.get(state) - vTask.get(state)){
+                maxDiff = vHarm.get(state) - vTask.get(state);
+                diffState = state;
+            }
         }
 
-        System.out.println(vi.getqTask().get("HOME"));
-
+        System.out.println(vHarm.get(diffState));
+        
     }
 
 }

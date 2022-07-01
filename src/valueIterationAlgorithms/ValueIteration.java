@@ -44,7 +44,7 @@ public class ValueIteration {
     }
 
 
-    public Map<String, List<String>> getPolicy(){
+    public void calculateQValues(){
 
         // Initialisation to 0 for all state-action pairs
         for(String state : world.getAllStateKeys()){
@@ -74,7 +74,6 @@ public class ValueIteration {
 
         int counter = 0;
 
-        // Start of while
         while( convMax > convergenceAchieved){
             counter++;
             convHarm = 0.;
@@ -192,29 +191,63 @@ public class ValueIteration {
 
         // Task Policy Extraction
         
-        Map<String, List<String>> policyTask = new HashMap<>();
-        for(String state : world.getAllStateKeys()){
-            List<String> stateActionsTask = new ArrayList<>();
-            Double minAction = Double.MAX_VALUE;
-            for(String action : world.getPossibleActionsForState(state)){
-                Double qTaskValue = qTask.get(state).get(action);
-                if(stateActionsTask.isEmpty()){
-                    stateActionsTask.add(action);
-                    minAction = qTaskValue;
-                }else if(minAction.equals(qTaskValue)){
-                    stateActionsTask.add(action);
-                }else if(minAction > qTaskValue){
-                    stateActionsTask.clear();
-                    stateActionsTask.add(action);
-                    minAction = qTaskValue;
-                }
-            }
-            policyTask.put(state, stateActionsTask);
-        }
+    //     Map<String, List<String>> policyTask = new HashMap<>();
+    //     for(String state : world.getAllStateKeys()){
+    //         List<String> stateActionsTask = new ArrayList<>();
+    //         Double minAction = Double.MAX_VALUE;
+    //         for(String action : world.getPossibleActionsForState(state)){
+    //             Double qTaskValue = qTask.get(state).get(action);
+    //             if(stateActionsTask.isEmpty()){
+    //                 stateActionsTask.add(action);
+    //                 minAction = qTaskValue;
+    //             }else if(minAction.equals(qTaskValue)){
+    //                 stateActionsTask.add(action);
+    //             }else if(minAction > qTaskValue){
+    //                 stateActionsTask.clear();
+    //                 stateActionsTask.add(action);
+    //                 minAction = qTaskValue;
+    //             }
+    //         }
+    //         policyTask.put(state, stateActionsTask);
+    //     }
         
-        System.out.println(counter);
-        return policyTask;
+    //     System.out.println(counter);
+    //     return policyTask;
+    }// End of calculateQValues
+
+    public Map<String, Double> getVforPolicy(Map<String, List<String>> policy){
+       
+        Map<String, Double> v = new HashMap<>();
+        for(String state : world.getAllStateKeys()){
+            v.put(state, 0.);
+        }
+
+        Double conv = Double.MAX_VALUE;
+        Double sum = 0.;
+        while(conv > convergenceAchieved){
+           conv = 0.;
+            for(String state : world.getAllStateKeys()){
+                Double temp = v.get(state);
+                Double maxSum = -Double.MAX_VALUE;
+                for(String action : world.getPossibleActionsForState(state)){
+                    sum = 0.;
+                    for(String statePrime : world.getPossibleResultingStates(state, action)){
+                        sum += agent.getTransition(state, action, statePrime) * (agent.getReward(state, action, statePrime).get("TASK") + gamma*v.get(statePrime));
+                        if(state.equals("COLLEGE_STREET_REVERSED_CITY_HIGH_HEAVY") || statePrime.equals("COLLEGE_STREET_REVERSED_CITY_HIGH_HEAVY")){
+                        }
+                    }
+                    if(maxSum < sum){
+                        maxSum = sum;
+                    }
+                }
+                conv = Math.max(conv, Math.abs(temp - v.get(state)));
+
+                v.replace(state, maxSum);
+            }
+        }
+        return v;
     }
+
 
     public Map<String, Map<String, Double>> getqGood() {
         return qGood;

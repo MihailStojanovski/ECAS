@@ -109,80 +109,92 @@ public class SelfDrivingCarWorld {
 
 
 
-public Set<String> getPossibleActionsForState(String state){
-    Set<String> possibleActions = new HashSet<>();
-    if(locationStrings.contains(state)){
-        possibleActions.add("STAY");
-        StringBuilder builder = new StringBuilder();
-        for(String rS : roadStrings){
-            StateRegistry roadStateReg = getRegistryFromStateKey(rS);
-            if(((Road)roadStateReg.getState()).getFromLocation().equals(state)){
-                builder.append("TURN_ONTO_");
-                builder.append(roadStateReg.getState().getName());
-                possibleActions.add(builder.toString());
-                builder.setLength(0);
+    public Set<String> getPossibleActionsForState(String state){
+        Set<String> possibleActions = new HashSet<>();
+        if(locationStrings.contains(state)){
+            possibleActions.add("STAY");
+            StringBuilder builder = new StringBuilder();
+            for(String rS : roadStrings){
+                StateRegistry roadStateReg = getRegistryFromStateKey(rS);
+                if(((Road)roadStateReg.getState()).getFromLocation().equals(state)){
+                    builder.append("TURN_ONTO_");
+                    builder.append(roadStateReg.getState().getName());
+                    possibleActions.add(builder.toString());
+                    builder.setLength(0);
+                }
             }
         }
-    }
-    if(roadStrings.contains(state)){
-        if(getRegistryFromStateKey(state).getSpeedAdjustment().equals("NONE")){
-            for(String a : accelerateActions.keySet())
-            possibleActions.add(a); 
+        if(roadStrings.contains(state)){
+            if(getRegistryFromStateKey(state).getSpeedAdjustment().equals("NONE")){
+                for(String a : accelerateActions.keySet())
+                possibleActions.add(a); 
+            }
+            else{
+                possibleActions.add("CRUISE");
+            }
         }
-        else{
-            possibleActions.add("CRUISE");
-        }
+        return possibleActions;
     }
-    return possibleActions;
-}
 
-/**
-* The getPossibleResultingStates function returns a set of possible resulting states from the given state and action.
-*
-* 
-* @param state The state in which the action is chosen.
-* @param action The action.
-* @return A set of possible resulting states given a state and an action.
-* 
-*/
-public Set<String> getPossibleResultingStates(String state, String action){
-    Set<String> possibleResultStates = new HashSet<>();
-    StringBuilder builder = new StringBuilder();
-    // If the state is a location state check if the action is a turn onto action
-    if(locationStrings.contains(state)){
-        if(action.equals("STAY")){
-            possibleResultStates.add(state);
-        }else{
-            for(String roadKey : roadStrings){
-                StateRegistry roadReg = getRegistryFromStateKey(roadKey);
-                if(((Road)roadReg.getState()).getFromLocation().equals(state)){
-                    if(roadReg.getSpeedAdjustment().equals("NONE")){
-                        builder.append("TURN_ONTO_");
-                        builder.append(roadReg.getState().getName());
-                        if(action.equals(builder.toString())){
-                            possibleResultStates.add(roadKey);
+    /**
+    * The getPossibleResultingStates function returns a set of possible resulting states from the given state and action.
+    *
+    * 
+    * @param state The state in which the action is chosen.
+    * @param action The action.
+    * @return A set of possible resulting states given a state and an action.
+    * 
+    */
+    public Set<String> getPossibleResultingStates(String state, String action){
+        Set<String> possibleResultStates = new HashSet<>();
+        StringBuilder builder = new StringBuilder();
+        // If the state is a location state check if the action is a turn onto action
+        if(locationStrings.contains(state)){
+            if(action.equals("STAY")){
+                possibleResultStates.add(state);
+            }else{
+                for(String roadKey : roadStrings){
+                    StateRegistry roadReg = getRegistryFromStateKey(roadKey);
+                    if(((Road)roadReg.getState()).getFromLocation().equals(state)){
+                        if(roadReg.getSpeedAdjustment().equals("NONE")){
+                            builder.append("TURN_ONTO_");
+                            builder.append(roadReg.getState().getName());
+                            if(action.equals(builder.toString())){
+                                possibleResultStates.add(roadKey);
+                            }
+                            builder.setLength(0);
                         }
-                        builder.setLength(0);
-                    }
-                }  
+                    }  
+                }
             }
-        }
         
-    }else if(roadStrings.contains(state)){
-        StateRegistry roadReg = getRegistryFromStateKey(state);
-        if(roadReg.getSpeedAdjustment().equals("NONE")){
-            if(accelerateActions.keySet().contains(action)){
-                StateRegistry tempReg = new StateRegistry(roadReg.getState(), accelerateActions.get(action), roadReg.getPedestrianTraffic());
-                possibleResultStates.add(tempReg.toString());
-            }
-        }else if(roadReg.getSpeedAdjustment().equals("LOW") || roadReg.getSpeedAdjustment().equals("NORMAL") || roadReg.getSpeedAdjustment().equals("HIGH")){
-            if(action.equals("CRUISE")){
-                possibleResultStates.add(((Road)roadReg.getState()).getToLocation());
+        }else if(roadStrings.contains(state)){
+            StateRegistry roadReg = getRegistryFromStateKey(state);
+            if(roadReg.getSpeedAdjustment().equals("NONE")){
+                if(accelerateActions.keySet().contains(action)){
+                    StateRegistry tempReg = new StateRegistry(roadReg.getState(), accelerateActions.get(action), roadReg.getPedestrianTraffic());
+                    possibleResultStates.add(tempReg.toString());
+                }
+            }else if(roadReg.getSpeedAdjustment().equals("LOW") || roadReg.getSpeedAdjustment().equals("NORMAL") || roadReg.getSpeedAdjustment().equals("HIGH")){
+                if(action.equals("CRUISE")){
+                    possibleResultStates.add(((Road)roadReg.getState()).getToLocation());
+                }
             }
         }
+        return possibleResultStates;
     }
-    return possibleResultStates;
-}
+
+    public Map<String, List<String>> getMapOfStatesAndActions(){
+        Map<String, List<String>> map = new HashMap<>();
+        for(String state : getAllStateKeys()){
+            List<String> actions = new ArrayList<>();
+            for(String action : getPossibleActionsForState(state)){
+                actions.add(action);
+            } 
+            map.put(state, actions);
+        }
+        return map;
+    }
 
     public List<String> getAllStateKeys(){
         return allStateKeys;
