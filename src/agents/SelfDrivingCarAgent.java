@@ -134,29 +134,4 @@ public class SelfDrivingCarAgent {
         return rewardsMap.get(state).get(action).get(successorState);  
     }
 
- 
-    //Old Reward function
-    /*
-    public Double rewardFunction(String state, String action, String successorState, Reward r){
-        
-        return 0.0;
-    }
-
-    public Double rewardFunction(String state, String action, String successorState, Reward r, boolean isGood){
-            Double epsilonPrime = 0.7;
-            Double epsilon = 0.7;
-            EthicalRewardQuad quad = r.getEthicalReward(state, action, successorState);
-            if(isGood){
-                return quad.getTriangle() - quad.getBarredTriangle() - epsilonPrime * quad.getBarredTriangle();
-            } 
-            else{
-                return quad.getNabla() - quad.getBarredNabla() + epsilon * quad.getBarredNabla();
-            }
-    }
-
-    public SelfDrivingCarWorld getWorld() {
-        return world;
-    }
-    */
-
 }

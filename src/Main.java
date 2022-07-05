@@ -93,7 +93,7 @@ public class Main {
         // Create evaluations for DCT with H and I
         eF.createDCTevals(profileList);
 
-        //eF.createPFDevals(contextToDuties);
+        // eF.createPFDevals(contextToDuties,3);
 
                
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEval = eF.getStateActionEval();
@@ -104,7 +104,7 @@ public class Main {
         SelfDrivingCarAgent agent = new SelfDrivingCarAgent(parsedWorld,ethicalReward);
 
         // If gamma is 0.9, even with convergence choosing the maximum between the three criteria when at the state home the agent chooses to go to the wrong street (MATOON_STREET_REVERSED)
-        // Decreasing the convergenceAchieved also gives us the correct entry (even with a gamma of 0.9)
+        // Decreasing the convergenceAchieved also gives us the correct entry (with a gamma of 0.9)
         ValueIteration vi = new ValueIteration(agent, parsedWorld, 0.7, 0.01, 0.9, 1. , 1. , 0., 0.);
         
         vi.calculateQValues();
@@ -123,23 +123,27 @@ public class Main {
 
         Map<String, List<String>> policyTask = pE.minimizingExtractor(genericExtractionTarget, qTask); 
         
-        Map<String, Double> vTask = vi.getVforPolicy(policyTask);
-        Map<String, Double> vHarm = vi.getVforPolicy(policyHarm);
+        Map<String, Double> vTask = vi.calculateAndReturnVforPolicy(policyTask);
+        Map<String, Double> vHarm = vi.calculateAndReturnVforPolicy(policyHarmTask);
 
 
-        // Null appears in COLLEGE_STREET_REVERSED_CITY_HIGH_HEAVY
-        
-        Double maxDiff = Double.MAX_VALUE;
+        Double maxDiff = -Double.MAX_VALUE;
         String diffState = "";
         for(String state : parsedWorld.getAllStateKeys()){
-            System.out.println("State : " + state + " vHarm : " + vHarm.get(state) + " vTask : " + vTask.get(state));
+            // System.out.println("State : " + state + " vHarm : " + vHarm.get(state) + " vTask : " + vTask.get(state));
             if(maxDiff < vHarm.get(state) - vTask.get(state)){
                 maxDiff = vHarm.get(state) - vTask.get(state);
                 diffState = state;
             }
         }
 
-        System.out.println(vHarm.get(diffState));
+        System.out.println("Difference : " + maxDiff + " ; in the state : " + diffState);
+
+        Double cost = maxDiff/vTask.get(diffState);
+        System.out.println(cost * 100 );
+
+        System.out.println("vTask[HOME] : " + vTask.get("HOME") + ", vHarm[HOME] : " + vHarm.get("HOME"));
+        
         
     }
 

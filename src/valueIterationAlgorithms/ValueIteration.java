@@ -140,82 +140,9 @@ public class ValueIteration {
                 }
             }// End of loop of all states and possible actions
         }// End of while
-
-        //System.out.println(qTask);
-
-        // Policy extraction w.r.t. harm
-        
-        // Map<String, List<String>> policyHarm = new HashMap<>();
-        // for(String state : world.getAllStateKeys()){
-        //     List<String> stateActionsHarm = new ArrayList<>();
-        //     Double minAction = Double.MAX_VALUE;
-        //     for(String action : world.getPossibleActionsForState(state)){
-        //         Double qHarmValue = qHarm.get(state).get(action);
-        //         if(stateActionsHarm.isEmpty()){
-        //             stateActionsHarm.add(action);
-        //             minAction = qHarmValue;
-        //         }else if(minAction.equals(qHarmValue)){
-        //             stateActionsHarm.add(action);
-        //         }else if(minAction > qHarmValue){
-        //             stateActionsHarm.clear();
-        //             stateActionsHarm.add(action);
-        //             minAction = qHarmValue;
-        //         }
-        //     }
-        //     policyHarm.put(state, stateActionsHarm);
-        // }
-        
-
-        // Policy extraction w.r.t. good
-
-        // Map<String, List<String>> policyGood = new HashMap<>();
-        // for(Entry<String, List<String>> e : policyHarm.entrySet()){
-        //     List<String> stateActionsGood = new ArrayList<>();
-        //     Double maxAction = -Double.MAX_VALUE;
-        //     for(String action : e.getValue()){
-        //         Double qGoodValue = qGood.get(e.getKey()).get(action);
-        //         if(stateActionsGood.isEmpty()){
-        //             stateActionsGood.add(action);
-        //             maxAction = qGoodValue;
-        //         }else if(maxAction.equals(qGoodValue)){
-        //             stateActionsGood.add(action);
-        //         }else if(maxAction < qGoodValue){
-        //             stateActionsGood.clear();
-        //             stateActionsGood.add(action);
-        //             maxAction = qGoodValue;
-        //         }
-        //     }
-        //     policyGood.put(e.getKey(), stateActionsGood);
-        // }
-
-
-        // Task Policy Extraction
-        
-    //     Map<String, List<String>> policyTask = new HashMap<>();
-    //     for(String state : world.getAllStateKeys()){
-    //         List<String> stateActionsTask = new ArrayList<>();
-    //         Double minAction = Double.MAX_VALUE;
-    //         for(String action : world.getPossibleActionsForState(state)){
-    //             Double qTaskValue = qTask.get(state).get(action);
-    //             if(stateActionsTask.isEmpty()){
-    //                 stateActionsTask.add(action);
-    //                 minAction = qTaskValue;
-    //             }else if(minAction.equals(qTaskValue)){
-    //                 stateActionsTask.add(action);
-    //             }else if(minAction > qTaskValue){
-    //                 stateActionsTask.clear();
-    //                 stateActionsTask.add(action);
-    //                 minAction = qTaskValue;
-    //             }
-    //         }
-    //         policyTask.put(state, stateActionsTask);
-    //     }
-        
-    //     System.out.println(counter);
-    //     return policyTask;
     }// End of calculateQValues
 
-    public Map<String, Double> getVforPolicy(Map<String, List<String>> policy){
+    public Map<String, Double> calculateAndReturnVforPolicy(Map<String, List<String>> policy){
        
         Map<String, Double> v = new HashMap<>();
         for(String state : world.getAllStateKeys()){
@@ -223,26 +150,29 @@ public class ValueIteration {
         }
 
         Double conv = Double.MAX_VALUE;
-        Double sum = 0.;
         while(conv > convergenceAchieved){
+
            conv = 0.;
+
             for(String state : world.getAllStateKeys()){
                 Double temp = v.get(state);
-                Double maxSum = -Double.MAX_VALUE;
-                for(String action : world.getPossibleActionsForState(state)){
-                    sum = 0.;
+                Double minSum = Double.MAX_VALUE;
+                for(String action : policy.get(state)){
+                    Double sum = 0.;
                     for(String statePrime : world.getPossibleResultingStates(state, action)){
-                        sum += agent.getTransition(state, action, statePrime) * (agent.getReward(state, action, statePrime).get("TASK") + gamma*v.get(statePrime));
-                        if(state.equals("COLLEGE_STREET_REVERSED_CITY_HIGH_HEAVY") || statePrime.equals("COLLEGE_STREET_REVERSED_CITY_HIGH_HEAVY")){
-                        }
-                    }
-                    if(maxSum < sum){
-                        maxSum = sum;
-                    }
-                }
-                conv = Math.max(conv, Math.abs(temp - v.get(state)));
+                        
+                        Double transitionP = agent.getTransition(state, action, statePrime);
+                        Double reward = agent.getReward(state, action, statePrime).get("TASK");
 
-                v.replace(state, maxSum);
+                        sum += transitionP * (reward + gamma * v.get(statePrime));
+                    }
+                    if(minSum > sum){
+                        minSum = sum;
+                    }
+                    
+                    v.replace(state, minSum);
+                    conv = Math.max(conv, Math.abs(temp - v.get(state)));
+                }
             }
         }
         return v;
