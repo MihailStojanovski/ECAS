@@ -1,10 +1,8 @@
 package valueIterationAlgorithms;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import agents.SelfDrivingCarAgent;
 import worlds.SelfDrivingCarWorld;
@@ -13,13 +11,13 @@ public class ValueIteration {
 
     private SelfDrivingCarAgent agent;
     private SelfDrivingCarWorld world;
-    private Double alpha;
     private Double convergenceAchieved;
     private Double gamma;
     private Double epsilonBN;
     private Double epsilonN;
     private Double epsilonBT;
     private Double epsilonT;
+    private int counter = 0;
     
     private Map<String, Map<String, Double>> qHarm = new HashMap<>(); 
     private Map<String, Map<String, Double>> qGood = new HashMap<>(); 
@@ -28,12 +26,11 @@ public class ValueIteration {
     
     
     public ValueIteration(  SelfDrivingCarAgent agent, SelfDrivingCarWorld world, 
-                            Double alpha, Double convergenceAchieved,  Double gamma, 
+                            Double convergenceAchieved,  Double gamma, 
                             Double epsilonBN, Double epsilonN, 
                             Double epsilonBT, Double epsilonT){
         this.agent = agent;
         this.world = world;
-        this.alpha = alpha;
         this.convergenceAchieved = convergenceAchieved;
         this.gamma = gamma;
         this.epsilonBN = epsilonBN;
@@ -72,7 +69,7 @@ public class ValueIteration {
         Double convMax = Double.MAX_VALUE;
 
 
-        int counter = 0;
+
 
         while( convMax > convergenceAchieved){
             counter++;
@@ -189,6 +186,10 @@ public class ValueIteration {
 
     public Map<String, Map<String, Double>> getqTask() {
         return qTask;
+    }
+
+    public int getCounter(){
+        return this.counter;
     }
 
 

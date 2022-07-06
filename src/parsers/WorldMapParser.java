@@ -31,9 +31,6 @@ public class WorldMapParser {
         
         JSONObject jsonObject = (JSONObject)obj;
 
-        String goalLocation     = (String)jsonObject.get("goalLocation");
-        String startLocation    = (String)jsonObject.get("startLocation");
-
         List<Road> roadsList = new ArrayList<>();
 
         Map roadsMap = ((Map)jsonObject.get("roads"));
@@ -62,7 +59,7 @@ public class WorldMapParser {
             locationsList.add(new Location(l));
         }
 
-        return new SelfDrivingCarWorld(locationsList, roadsList, startLocation, goalLocation);
+        return new SelfDrivingCarWorld(locationsList, roadsList);
     }
     
 }

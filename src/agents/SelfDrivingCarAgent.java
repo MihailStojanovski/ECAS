@@ -1,25 +1,15 @@
 package agents;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import rewards.RewardCalculator;
 import rewards.EthicalRewardQuad;
-import states.Location;
-import states.Road;
-import states.State;
 import states.StateRegistry;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import worlds.SelfDrivingCarWorld;
 
-import static java.util.Map.entry;
 
 /**
  * SelfDrivingCarAgent

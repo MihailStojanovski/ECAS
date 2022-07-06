@@ -114,7 +114,7 @@ public class EvaluationFactory {
 
     // Context Index -> State Profile in which the duty is applied -> action which fulfills the duty
 
-    public void createPFDevals(Map<Integer,Map<StateProfile,String>> contextToDuties, int tolerance){
+    public void createPFDevals(Map<Integer,Map<StateProfile,String>> contextToDuties){
         fillUpStateActionEvalWith(Integer.MAX_VALUE);
         fillUpStateEvalWith(Integer.MAX_VALUE);
 
@@ -167,7 +167,6 @@ public class EvaluationFactory {
                         dutyActionsSeparated.add(dutyAction);
                     }
                     
-                    int toleranceCounter = 0;
                     List<String> possibleActions = new ArrayList<>(world.getPossibleActionsForState(state));
                     if(possibleActions.containsAll(dutyActionsSeparated)){
                         // If the action is different from the actions given by the duties, they will be promoting the negative associated value of the context
@@ -177,11 +176,7 @@ public class EvaluationFactory {
                                 actionNeglectCounter++;
                             }
                             if(actionNeglectCounter == 5){
-                                if(toleranceCounter > tolerance){
                                     setStateActionEval(state, action, 1, contextValueIndex);
-                                }else{
-                                    toleranceCounter++;
-                                }
                             }
                         }
                     }

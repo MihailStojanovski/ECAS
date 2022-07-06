@@ -34,11 +34,9 @@ public class SelfDrivingCarWorld {
     private List<String> roadActions = new ArrayList<>();
     private List<String> allActions;
 
-    public SelfDrivingCarWorld(List<Location> locations, List<Road> roads, String startLocation, String goalLocation){
+    public SelfDrivingCarWorld(List<Location> locations, List<Road> roads){
         this.locations = locations;
         this.roads = roads;
-        this.startLocation = startLocation;
-        this.goalLocation = goalLocation;
         setUpConstants();
         setUpVariables();
     }
@@ -246,5 +244,13 @@ public class SelfDrivingCarWorld {
 
     public String getGoalLocation() {
         return goalLocation;
+    }
+
+    public void setStartLocation(String start){
+        this.startLocation = start;
+    }
+
+    public void setGoalLocation(String goal){
+        this.goalLocation = goal;
     }
 }
