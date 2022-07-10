@@ -41,7 +41,7 @@ public class SelfDrivingCarAgent {
         if(world.getLocationStrings().contains(currentState)){
             if(action.equals("STAY")){
                 if(successorState.equals(currentState)){
-                    return 1.0;
+                    return 1D;
                 }
             }
             else if(world.getLocationActions().contains(action) && !action.equals("STAY") ){
@@ -56,16 +56,16 @@ public class SelfDrivingCarAgent {
         if(world.getRoadStrings().contains(currentState)){
             if(world.getRoadStrings().contains(successorState) && world.getAccelerateActions().containsKey(action)){
                 if(currentStateRegistry.getSpeedAdjustment().equals("NONE") && !successorStateRegistry.getSpeedAdjustment().equals("NONE")){
-                    return 1.0;
+                    return 1D;
                 }
             }
             if(world.getLocationStrings().contains(successorState) && action.equals("CRUISE")){
                 if(!currentStateRegistry.getSpeedAdjustment().equals("NONE")){
-                    return 1.0;
+                    return 1D;
                 }
             }
         }
-        return 0.0;
+        return 0D;
     }
 
     private void calculateAndSaveTransitions(){

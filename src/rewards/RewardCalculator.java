@@ -10,10 +10,10 @@ import worlds.SelfDrivingCarWorld;
 public class RewardCalculator{
 
 
-    private Double stayingTime = 120.;
-    private Double turningTime = 5.;
-    private Double accelerationRate = 2.;
-    private Double driverErrorPenalty = 3600.;
+    private final Double stayingTime = 120D;
+    private final Double turningTime = 5D;
+    private final Double accelerationRate = 2D;
+    private final Double driverErrorPenalty = 3600D;
 
     // The context with the moral values
     private List<Integer> context;
@@ -73,7 +73,7 @@ public class RewardCalculator{
         if(world.getGoalLocation().equals(currentState)){
             if(action.equals("STAY")){
                 if(successorState.equals(currentState)){
-                    return 0.;
+                    return 0D;
                 }
             }
         }
@@ -94,13 +94,13 @@ public class RewardCalculator{
                 if(!currentStateRegistry.getSpeedAdjustment().equals("NONE")){
                     Double speed = world.getSpeedLimits().get(((Road)world.getRegistryFromStateKey(currentState).getState()).getType()) + Double.valueOf(world.getSpeedAdjustments().get(world.getRegistryFromStateKey(currentState).getSpeedAdjustment()));
                     Double distance = ((Road)world.getRegistryFromStateKey(currentState).getState()).getLength();
-                    return 3600.0 * distance / speed;
+                    return 3600D * distance / speed;
                 }
             }
             if(world.getRoadStrings().contains(successorState) && world.getAccelerateActions().containsKey(action)){
                 if(currentStateRegistry.getSpeedAdjustment().equals("NONE") && !successorStateRegistry.getSpeedAdjustment().equals("NONE")){
                     int speed = world.getSpeedLimits().get(((Road)world.getRegistryFromStateKey(currentState).getState()).getType());
-                    return accelerationRate * speed / 10.;
+                    return accelerationRate * speed / 10D;
                 }
             }
         }

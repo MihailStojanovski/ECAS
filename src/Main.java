@@ -49,27 +49,27 @@ public class Main {
         parsedWorld.setGoalLocation("DINER");
         showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor);
 
-        System.out.println("Hazardous DCT for task 2 : ");
-        parsedWorld.setGoalLocation("OFFICE");
-        showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor);
+        // System.out.println("Hazardous DCT for task 2 : ");
+        // parsedWorld.setGoalLocation("OFFICE");
+        // showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor);
 
-        System.out.println("Hazardous DCT for task 3 : ");
-        parsedWorld.setGoalLocation("PARK");
-        showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor);
+        // System.out.println("Hazardous DCT for task 3 : ");
+        // parsedWorld.setGoalLocation("PARK");
+        // showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor);
 
 
-        // Hazardous and Inconsiderate
+        // // Hazardous and Inconsiderate
         System.out.println("Hazardous & Inconsiderate DCT for task 1 : ");
         parsedWorld.setGoalLocation("DINER");
         showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor);
 
-        System.out.println("Hazardous & Inconsiderate DCT for task 2 : ");
-        parsedWorld.setGoalLocation("OFFICE");
-        showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor);
+        // System.out.println("Hazardous & Inconsiderate DCT for task 2 : ");
+        // parsedWorld.setGoalLocation("OFFICE");
+        // showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor);
 
-        System.out.println("Hazardous & Inconsiderate DCT for task 3 : ");
-        parsedWorld.setGoalLocation("PARK");
-        showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor);
+        // System.out.println("Hazardous & Inconsiderate DCT for task 3 : ");
+        // parsedWorld.setGoalLocation("PARK");
+        // showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor);
 
         // ---------------------------------- PFD ----------------------------------
         System.out.println("---------------------------------- PFD ----------------------------------");
@@ -90,17 +90,17 @@ public class Main {
         contextToDuties.put(1,carefulOperationDuty);
 
 
-        System.out.println("0 tolerance PFD for task 1 : ");
-        parsedWorld.setGoalLocation("DINER");
-        showLossPFD(context, contextToDuties, parsedWorld, policyExtractor);
+        // System.out.println("0 tolerance PFD for task 1 : ");
+        // parsedWorld.setGoalLocation("DINER");
+        // showLossPFD(context, contextToDuties, parsedWorld, policyExtractor);
 
-        System.out.println("0 tolerance PFD for task 2 : ");
-        parsedWorld.setGoalLocation("OFFICE");
-        showLossPFD(context, contextToDuties, parsedWorld, policyExtractor);
+        // System.out.println("0 tolerance PFD for task 2 : ");
+        // parsedWorld.setGoalLocation("OFFICE");
+        // showLossPFD(context, contextToDuties, parsedWorld, policyExtractor);
 
-        System.out.println("0 tolerance PFD for task 3 : ");
-        parsedWorld.setGoalLocation("PARK");
-        showLossPFD(context, contextToDuties, parsedWorld, policyExtractor);
+        // System.out.println("0 tolerance PFD for task 3 : ");
+        // parsedWorld.setGoalLocation("PARK");
+        // showLossPFD(context, contextToDuties, parsedWorld, policyExtractor);
 
 
 
@@ -128,7 +128,7 @@ public class Main {
         ValueIteration valueIterationDCT = new ValueIteration(agentDCT, parsedWorld, 0.001, 0.99, 1. , 1. , 0., 0.);
 
         valueIterationDCT.calculateQValues();
-
+        System.out.println(valueIterationDCT.getCounter());
         Map<String, Map<String, Double>> qHarmDCT = valueIterationDCT.getqHarm();
         Map<String, Map<String, Double>> qTaskDCT = valueIterationDCT.getqTask();
 
@@ -143,6 +143,14 @@ public class Main {
         
         Map<String, Double> vTaskDCT = valueIterationDCT.calculateAndReturnVforPolicy(policyTaskDCT);
         Map<String, Double> vHarmDCT = valueIterationDCT.calculateAndReturnVforPolicy(policyHarmTaskDCT);
+
+        // for(Map.Entry<String, List<String>> e : policyTaskDCT.entrySet()){
+        //     System.out.println(e);
+        // }
+
+        // for(Map.Entry<String, List<String>> e : policyHarmTaskDCT.entrySet()){
+        //     System.out.println(e);
+        // }
 
         Double maxDiffDCT = -Double.MAX_VALUE;
         String diffStateDCT = "";
@@ -159,7 +167,7 @@ public class Main {
         Double lossDCT = (maxDiffDCT / vTaskDCT.get(diffStateDCT)) * 100;
         System.out.println("Loss % : " + lossDCT);
 
-        System.out.println("vTask[HOME] : " + vTaskDCT.get("HOME") + ", vHarm[HOME] : " + vHarmDCT.get("HOME"));
+        System.out.println("vTask[SCHOOL] : " + vTaskDCT.get("SCHOOL") + ", vHarm[SCHOOL] : " + vHarmDCT.get("SCHOOL"));
 
     }
 

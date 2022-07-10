@@ -49,9 +49,9 @@ public class ValueIteration {
             Map<String, Double> tempActionGood = new HashMap<>();
             Map<String, Double> tempActionTask = new HashMap<>();
             for(String action : world.getPossibleActionsForState(state)){
-                tempActionHarm.put(action, 0.);
-                tempActionGood.put(action, 0.);
-                tempActionTask.put(action, 0.);
+                tempActionHarm.put(action, 0D);
+                tempActionGood.put(action, 0D);
+                tempActionTask.put(action, 0D);
             }
             qHarm.put(state, tempActionHarm);
             qGood.put(state, tempActionGood);
@@ -73,6 +73,7 @@ public class ValueIteration {
 
         while( convMax > convergenceAchieved){
             counter++;
+            
             convHarm = 0.;
             convGood = 0.;
             convTask = 0.;
