@@ -4,17 +4,19 @@ public class VirtueEthicsData {
     
     private int negativeContextIndex;
     private int positiveContextIndex;
-    private StateProfile trajectoryState;
+    private StateProfile trajectoryStateProfile;
     private String trajectoryAction;
-    private StateProfile trajectorySuccessorState;
+    private StateProfile trajectorySuccessorStateProfile;
+    private boolean positiveTrajectory;
 
-    public VirtueEthicsData(int negativeContextIndex, int positiveContextIndex, StateProfile trajectoryState, String trajectoryAction, StateProfile trajectorySuccessorState){
+    public VirtueEthicsData(int negativeContextIndex, int positiveContextIndex, StateProfile trajectoryState, String trajectoryAction, StateProfile trajectorySuccessorState, boolean positiveTrajectory){
 
         this.negativeContextIndex     = negativeContextIndex;
         this.positiveContextIndex     = positiveContextIndex;
-        this.trajectoryState          = trajectoryState;
+        this.trajectoryStateProfile          = trajectoryState;
         this.trajectoryAction         = trajectoryAction;
-        this.trajectorySuccessorState = trajectorySuccessorState;
+        this.trajectorySuccessorStateProfile = trajectorySuccessorState;
+        this.positiveTrajectory = positiveTrajectory;
 
     }
 
@@ -30,11 +32,15 @@ public class VirtueEthicsData {
         return trajectoryAction;
     }
 
-    public StateProfile getTrajectoryState() {
-        return trajectoryState;
+    public StateProfile getTrajectoryStateProfile() {
+        return trajectoryStateProfile;
     }
 
-    public StateProfile getTrajectorySuccessorState() {
-        return trajectorySuccessorState;
+    public StateProfile getTrajectorySuccessorStateProfile() {
+        return trajectorySuccessorStateProfile;
+    }
+
+    public boolean isPositiveTrajectory(){
+        return positiveTrajectory;
     }
 }

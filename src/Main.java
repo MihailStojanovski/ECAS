@@ -1,3 +1,8 @@
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -108,26 +113,38 @@ public class Main {
         // ---------------------------------- VE ----------------------------------
         System.out.println("---------------------------------- VE ----------------------------------");
 
-        List<Integer> contextVE = new ArrayList<>(Arrays.asList(0,1,0,1));
+        List<Integer> contextVE = new ArrayList<>(Arrays.asList(0,1));
+
+        // MGT with location
+
+        // StateProfile trajectoryState = new StateProfile("ALL", "ALL", "ALL", "ALL");
+        // String trajectoryAction = "ALL";
+        // StateProfile trajectorySuccessorState = new StateProfile("TOWN_HALL", "ALL", "ALL", "ALL");
 
         StateProfile trajectoryState = new StateProfile("ALL", "ALL", "NONE", "LIGHT");
         String trajectoryAction = "TO_NORMAL";
         StateProfile trajectorySuccessorState = new StateProfile("ALL", "ALL", "NORMAL", "LIGHT");
 
-        VirtueEthicsData cautious_1 = new VirtueEthicsData(0, 1, trajectoryState, trajectoryAction, trajectorySuccessorState);
+        VirtueEthicsData cautious_1 = new VirtueEthicsData(0, 1, trajectoryState, trajectoryAction, trajectorySuccessorState,true);
 
         StateProfile trajectoryStateC2 = new StateProfile("ALL", "ALL", "NONE", "HEAVY");
         String trajectoryActionC2 = "TO_LOW";
         StateProfile trajectorySuccessorStateC2 = new StateProfile("ALL", "ALL", "LOW", "HEAVY");
 
-        VirtueEthicsData cautious_2 = new VirtueEthicsData(2, 3, trajectoryStateC2, trajectoryActionC2, trajectorySuccessorStateC2);
-        List<VirtueEthicsData> dataListVE = new ArrayList<>(Arrays.asList(cautious_1, cautious_2));
+        VirtueEthicsData cautious_2 = new VirtueEthicsData(2, 3, trajectoryStateC2, trajectoryActionC2, trajectorySuccessorStateC2,true);
+
+        StateProfile trajectoryStateP = new StateProfile("ALL", "ALL", "ALL", "ALL");
+        String trajectoryActionP = "ALL";
+        StateProfile trajectorySuccessorStateP = new StateProfile("ALL", "HIGHWAY", "ALL", "ALL");
+        VirtueEthicsData proactive = new VirtueEthicsData(0, 1, trajectoryStateP, trajectoryActionP, trajectorySuccessorStateP,false);
+
+
+        // Check the context before executing
+        List<VirtueEthicsData> dataListVE = new ArrayList<>(Arrays.asList(proactive));
 
         System.out.println("VE for task 1 : ");
-        parsedWorld.setGoalLocation("DINER");
+        parsedWorld.setGoalLocation("DELI");
         showLossVE(contextVE, dataListVE, parsedWorld, policyExtractor);
-
-        
         
     }
 
@@ -166,15 +183,15 @@ public class Main {
         Map<String, Double> vTaskDCT = valueIterationDCT.calculateAndReturnVforPolicy(policyTaskDCT);
         Map<String, Double> vHarmDCT = valueIterationDCT.calculateAndReturnVforPolicy(policyHarmTaskDCT);
 
-        System.out.println("[TASK]");
-        for(Map.Entry<String, List<String>> e : policyTaskDCT.entrySet()){
-            System.out.println(e);
-        }
+        // System.out.println("[TASK]");
+        // for(Map.Entry<String, List<String>> e : policyTaskDCT.entrySet()){
+        //     System.out.println(e);
+        // }
 
-        System.out.println("[HARM+TASK]");
-        for(Map.Entry<String, List<String>> e : policyHarmTaskDCT.entrySet()){
-            System.out.println(e);
-        }
+        // System.out.println("[HARM+TASK]");
+        // for(Map.Entry<String, List<String>> e : policyHarmTaskDCT.entrySet()){
+        //     System.out.println(e);
+        // }
 
         Double maxDiffDCT = -Double.MAX_VALUE;
         String diffStateDCT = "";
@@ -194,6 +211,8 @@ public class Main {
         System.out.println("vTask[SCHOOL] : " + vTaskDCT.get("SCHOOL") + ", vHarm[SCHOOL] : " + vHarmDCT.get("SCHOOL"));
         Double dif = vHarmDCT.get("SCHOOL") - vTaskDCT.get("SCHOOL");
         System.out.println((dif / vTaskDCT.get("SCHOOL")) * 100);
+
+        System.out.println("Iteration: " + valueIterationDCT.getCounter());
 
     }
 
@@ -247,6 +266,7 @@ public class Main {
 
         System.out.println("vTask[HOME] : " + vTaskPFD.get("HOME") + ", vHarm[HOME] : " + vHarmPFD.get("HOME"));
 
+        System.out.println("Iteration: " + valueIterationPFD.getCounter());
 
     }
 
@@ -254,9 +274,56 @@ public class Main {
         
         EvaluationFactory evaluationFactoryVE = new EvaluationFactory(context, parsedWorld);
 
-        evaluationFactoryVE.createPositiveVEevals(dataListVE);
+        evaluationFactoryVE.createVEevals(dataListVE);
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEvalVE = evaluationFactoryVE.getStateActionEval();
         Map<Integer,Map<String,Integer>> stateEvalVE = evaluationFactoryVE.getStateEval();
+
+        BufferedWriter writer;
+        try {
+            writer = new BufferedWriter(new FileWriter("outputStateAction.txt", false));
+        
+            for(Map.Entry<Integer,Map<String,Map<String,Integer>>> hasContextEnrty : stateActionEvalVE.entrySet()){
+                writer.append("CONTEXT: " + hasContextEnrty.getKey() + "{\n");
+                Map<String,Map<String,Integer>> hasStateMap = hasContextEnrty.getValue();
+                for(Map.Entry<String,Map<String,Integer>> hasStateEntry : hasStateMap.entrySet()){
+                    writer.append("STATE: " + hasStateEntry.getKey() + " {\n ");
+                    Map<String,Integer> hasActionMap = hasStateEntry.getValue();
+                    for(Map.Entry<String,Integer> hasActionEntry : hasActionMap.entrySet()){
+                        writer.append("ACTION: " + hasActionEntry.getKey() + ", WORTH: " + hasActionEntry.getValue() + "\n");
+                    }
+                    writer.append("END STATE: " + hasStateEntry.getKey() + " }\n ");
+                }
+                writer.append("END CONTEXT: " + hasContextEnrty.getKey() + "}\n");
+            }
+
+
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        BufferedWriter writer2;
+        try {
+            writer2 = new BufferedWriter(new FileWriter("outputState.txt", false));
+        
+            for(Map.Entry<Integer,Map<String,Integer>> hasContextEnrty : stateEvalVE.entrySet()){
+                writer2.append("CONTEXT: " + hasContextEnrty.getKey() + "{\n");
+                Map<String,Integer> hasStateMap = hasContextEnrty.getValue();
+                for(Map.Entry<String,Integer> hasStateEntry : hasStateMap.entrySet()){
+                    writer2.append("STATE: " + hasStateEntry.getKey() + " , WORTH: " + hasStateEntry.getValue() + "\n");
+                }
+                writer2.append("END CONTEXT: " + hasContextEnrty.getKey() + "}\n");
+            }
+
+
+            writer2.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+            
+
+
+        
 
         RewardCalculator rewardCalculatorVE = new RewardCalculator(context, stateActionEvalVE, stateEvalVE, parsedWorld);
         
@@ -277,14 +344,13 @@ public class Main {
         Map<String, List<String>> policyHarmGoodVE = policyExtractor.maximizingExtractor(policyHarmVE, qGoodVE);
 
 
-        // System.out.println("[ETHICS]");
-        // for(Map.Entry<String, List<String>> e : policyHarmGoodVE.entrySet()){
-        //     System.out.println(e);
-        // }
         
         Map<String, List<String>> policyHarmGoodTaskVE = policyExtractor.minimizingExtractor(policyHarmGoodVE, qTaskVE);
-
-
+        
+        // Policy print
+        // for(Map.Entry<String, List<String>> e : policyHarmGoodTaskVE.entrySet()){
+        //     System.out.println(e);
+        // }
         Map<String, List<String>> policyTaskVE = policyExtractor.minimizingExtractor(genericExtractionTarget, qTaskVE); 
         
         Map<String, Double> vTaskVE = valueIterationVE.calculateAndReturnVforPolicy(policyTaskVE);
@@ -302,7 +368,7 @@ public class Main {
         }
 
 
-        System.out.println("vTask[" + diffStateVE +"] : " + vTaskVE.get(diffStateVE) + "; vHarm["+ diffStateVE + "] : " + vEthicsVE.get(diffStateVE));
+        System.out.println("Most difference in state: Task[" + diffStateVE +"] : " + vTaskVE.get(diffStateVE) + "; VE["+ diffStateVE + "] : " + vEthicsVE.get(diffStateVE));
         System.out.println("Difference : " + maxDiffVE + " ; in the state : " + diffStateVE);
 
         Double lossVE = (maxDiffVE / vTaskVE.get(diffStateVE)) * 100;
