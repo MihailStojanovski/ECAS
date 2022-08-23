@@ -24,6 +24,8 @@ public class RewardCalculator{
     // The moral evaluation of a state with the integer representing the associated moral value
     private Map<Integer,Map<String,Integer>> stateEval;
 
+
+
     private SelfDrivingCarWorld world;
 
     public RewardCalculator(List<Integer> context, Map<Integer,Map<String,Map<String,Integer>>> stateActionEval, Map<Integer,Map<String,Integer>> stateEval, SelfDrivingCarWorld world) {

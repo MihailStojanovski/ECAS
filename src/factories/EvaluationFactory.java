@@ -269,7 +269,7 @@ public class EvaluationFactory {
                 }
 
                 // Check if the state matches the given condition
-                if((counter == 4 && (stateRegistry.getState() instanceof Road)) || (counter == 1 && !(stateRegistry.getState() instanceof Road))){
+                if((counter == 4 && !trajectoryStateProfile.isLocation()) || (counter == 1 && trajectoryStateProfile.isLocation())){
 
                     List<String> possibleActions = new ArrayList<>(world.getPossibleActionsForState(state));
                     if(possibleActions.contains(trajectoryAction) || trajectoryAction.equals("ALL")){
@@ -318,7 +318,7 @@ public class EvaluationFactory {
                                     // The initial state promotes the second context index
                                     // The state-action promotes the second context index
                                     // The successor state is non applicable for the second context index
-                                    if((successorCounter == 4 && (successorStateRegistry.getState() instanceof Road)) || (successorCounter == 1 && !(successorStateRegistry.getState() instanceof Road))){
+                                    if((successorCounter == 4 && !trajectorySuccessorStateProfile.isLocation()) || (successorCounter == 1 && trajectorySuccessorStateProfile.isLocation())){
                                         setStateEval(state, 1, secondContextIndex);
                                         setStateActionEval(state, action, 1, secondContextIndex);
                                         setStateEval(successorState, Integer.MAX_VALUE, secondContextIndex);

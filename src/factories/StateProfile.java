@@ -1,29 +1,25 @@
 package factories;
 
 public class StateProfile {
-    String name;
-    String type;
-    
-    // For later use
-    /*
-    String toLocation;
-    String fromLocation;
-    Double length;
-    */ 
-    
-    String speedAdjustment;
-    String pedestrianTraffic;
+    private String name;
+    private String type;
+    private boolean isLocation;    
+    private String speedAdjustment;
+    private String pedestrianTraffic;
 
 
 
-    public StateProfile(String name, String type, String speedAdjustment, String pedestrianTraffic){
+    public StateProfile(String name, String type, String speedAdjustment, String pedestrianTraffic, boolean isLocation){
         this.name = name;
         this.type = type;
         this.speedAdjustment = speedAdjustment;
         this.pedestrianTraffic = pedestrianTraffic;
+        this.isLocation = isLocation;
     }
 
-    
+    public boolean isLocation(){
+        return isLocation;
+    }
 
     public String getName() {
         return name;

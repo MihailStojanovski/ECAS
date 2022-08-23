@@ -41,8 +41,8 @@ public class Main {
         System.out.println("---------------------------------- DCT ----------------------------------");
 
         // Forbidden state profiles for DCT as explained in the original paper Hazardous(H) and Inconsiderate(I)
-        StateProfile hazardous = new StateProfile("ALL", "ALL", "HIGH", "ALL");
-        StateProfile inconsiderate = new StateProfile("ALL", "ALL", "NORMAL", "HEAVY");
+        StateProfile hazardous = new StateProfile("ALL", "ALL", "HIGH", "ALL",false);
+        StateProfile inconsiderate = new StateProfile("ALL", "ALL", "NORMAL", "HEAVY",false);
         
         List<StateProfile> profileListHazardous = new ArrayList<>();
         profileListHazardous.add(hazardous);
@@ -85,13 +85,13 @@ public class Main {
         // PFD definitions of duties
         Map<Integer, Map<StateProfile, String>> contextIndexToDuties = new HashMap<>();
 
-        StateProfile smoothOperationState = new StateProfile("ALL", "ALL", "NONE", "LIGHT");
+        StateProfile smoothOperationState = new StateProfile("ALL", "ALL", "NONE", "LIGHT",false);
         String smoothOperationAction = "TO_HIGH || TO_NORMAL";
         Map<StateProfile, String> smoothOperationDuty = new HashMap<>();
         smoothOperationDuty.put(smoothOperationState, smoothOperationAction);
         contextIndexToDuties.put(0,smoothOperationDuty);
 
-        StateProfile carefulOperationState = new StateProfile("ALL", "ALL", "NONE", "HEAVY");
+        StateProfile carefulOperationState = new StateProfile("ALL", "ALL", "NONE", "HEAVY",false);
         String carefulOperationAction = "TO_LOW";
         Map<StateProfile, String> carefulOperationDuty = new HashMap<>();
         carefulOperationDuty.put(carefulOperationState, carefulOperationAction);
@@ -121,21 +121,21 @@ public class Main {
         // String trajectoryAction = "ALL";
         // StateProfile trajectorySuccessorState = new StateProfile("TOWN_HALL", "ALL", "ALL", "ALL");
 
-        StateProfile trajectoryState = new StateProfile("ALL", "ALL", "NONE", "LIGHT");
+        StateProfile trajectoryState = new StateProfile("ALL", "ALL", "NONE", "LIGHT",false);
         String trajectoryAction = "TO_NORMAL";
-        StateProfile trajectorySuccessorState = new StateProfile("ALL", "ALL", "NORMAL", "LIGHT");
+        StateProfile trajectorySuccessorState = new StateProfile("ALL", "ALL", "NORMAL", "LIGHT",false);
 
         VirtueEthicsData cautious_1 = new VirtueEthicsData(0, 1, trajectoryState, trajectoryAction, trajectorySuccessorState,true);
 
-        StateProfile trajectoryStateC2 = new StateProfile("ALL", "ALL", "NONE", "HEAVY");
+        StateProfile trajectoryStateC2 = new StateProfile("ALL", "ALL", "NONE", "HEAVY",false);
         String trajectoryActionC2 = "TO_LOW";
-        StateProfile trajectorySuccessorStateC2 = new StateProfile("ALL", "ALL", "LOW", "HEAVY");
+        StateProfile trajectorySuccessorStateC2 = new StateProfile("ALL", "ALL", "LOW", "HEAVY",false);
 
         VirtueEthicsData cautious_2 = new VirtueEthicsData(2, 3, trajectoryStateC2, trajectoryActionC2, trajectorySuccessorStateC2,true);
 
-        StateProfile trajectoryStateP = new StateProfile("ALL", "ALL", "ALL", "ALL");
+        StateProfile trajectoryStateP = new StateProfile("ALL", "ALL", "ALL", "ALL",true);
         String trajectoryActionP = "ALL";
-        StateProfile trajectorySuccessorStateP = new StateProfile("ALL", "HIGHWAY", "ALL", "ALL");
+        StateProfile trajectorySuccessorStateP = new StateProfile("ALL", "HIGHWAY", "ALL", "ALL",false);
         VirtueEthicsData proactive = new VirtueEthicsData(0, 1, trajectoryStateP, trajectoryActionP, trajectorySuccessorStateP,false);
 
 
@@ -143,7 +143,7 @@ public class Main {
         List<VirtueEthicsData> dataListVE = new ArrayList<>(Arrays.asList(proactive));
 
         System.out.println("VE for task 1 : ");
-        parsedWorld.setGoalLocation("DELI");
+        parsedWorld.setGoalLocation("OFFICE");
         showLossVE(contextVE, dataListVE, parsedWorld, policyExtractor);
         
     }
@@ -337,20 +337,34 @@ public class Main {
         Map<String, Map<String, Double>> qGoodVE = valueIterationVE.getqGood();
         Map<String, Map<String, Double>> qTaskVE = valueIterationVE.getqTask();
 
+        for(Map.Entry<String, Map<String,Double>> e : qHarmVE.entrySet()){
+            if(e.getKey().equals("GAS_STATION")){
+                System.out.println(e);
+
+            }
+            
+        }
+
         Map<String, List<String>> genericExtractionTarget = parsedWorld.getMapOfStatesAndActions();
 
         Map<String, List<String>> policyHarmVE = policyExtractor.minimizingExtractor(genericExtractionTarget, qHarmVE);
+        // Policy print
+        for(Map.Entry<String, List<String>> e : policyHarmVE.entrySet()){
+            if(e.getKey().equals("GAS_STATION")){
+                System.out.println(e);
+            }
+        }
 
         Map<String, List<String>> policyHarmGoodVE = policyExtractor.maximizingExtractor(policyHarmVE, qGoodVE);
 
-
+        // Policy print
+        // for(Map.Entry<String, List<String>> e : policyHarmGoodVE.entrySet()){
+        //     System.out.println(e);
+        // }
         
         Map<String, List<String>> policyHarmGoodTaskVE = policyExtractor.minimizingExtractor(policyHarmGoodVE, qTaskVE);
         
-        // Policy print
-        // for(Map.Entry<String, List<String>> e : policyHarmGoodTaskVE.entrySet()){
-        //     System.out.println(e);
-        // }
+
         Map<String, List<String>> policyTaskVE = policyExtractor.minimizingExtractor(genericExtractionTarget, qTaskVE); 
         
         Map<String, Double> vTaskVE = valueIterationVE.calculateAndReturnVforPolicy(policyTaskVE);
