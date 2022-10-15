@@ -211,26 +211,15 @@ public class EvaluationFactory {
 
     public void createVEevals(List<VirtueEthicsData> dataListVE){
 
-        int firstContextIndex, secondContextIndex;
         for(VirtueEthicsData dataVE : dataListVE){
 
-            if(dataVE.isPositiveTrajectory()){
-                // If the trajectory is positive the first context index is of the negative value and the second context index is of the positive value
-                firstContextIndex = dataVE.getNegativeContextIndex();
-                secondContextIndex = dataVE.getPositiveContextIndex();
-            }else{
-                // If the trajectory is negative the first context index is of the positive value and the second context index is of the negative value
-                firstContextIndex = dataVE.getPositiveContextIndex();
-                secondContextIndex = dataVE.getNegativeContextIndex();
-            }
-
             // All states and state-action pairs are not applicable for the first context index
-            fillUpStateActionEvalWith(Integer.MAX_VALUE, firstContextIndex);
-            fillUpStateEvalWith(Integer.MAX_VALUE, firstContextIndex);
+            fillUpStateActionEvalWith(Integer.MAX_VALUE, dataVE.getNegativeContextIndex());
+            fillUpStateEvalWith(Integer.MAX_VALUE, dataVE.getNegativeContextIndex());
 
             // All states and state-action pairs demote for the second context index
-            fillUpStateActionEvalWith(0, secondContextIndex);
-            fillUpStateEvalWith(0, secondContextIndex);
+            fillUpStateActionEvalWith(0, dataVE.getPositiveContextIndex());
+            fillUpStateEvalWith(0, dataVE.getPositiveContextIndex());
 
             StateProfile trajectoryStateProfile = dataVE.getTrajectoryStateProfile();
             String trajectoryAction = dataVE.getTrajectoryAction();
@@ -271,14 +260,29 @@ public class EvaluationFactory {
                 // Check if the state matches the given condition
                 if((counter == 4 && !trajectoryStateProfile.isLocation()) || (counter == 1 && trajectoryStateProfile.isLocation())){
 
+                    List<String> trajectoryActionsSeparated = new LinkedList<>();
+                    if(trajectoryAction.contains("||")){
+                        trajectoryActionsSeparated = new LinkedList<String>(Arrays.asList(trajectoryAction.split(" ")));
+                        trajectoryActionsSeparated.removeAll(Collections.singleton("||"));
+                    }else{
+                        trajectoryActionsSeparated.add(trajectoryAction);
+                    }
+
                     List<String> possibleActions = new ArrayList<>(world.getPossibleActionsForState(state));
-                    if(possibleActions.contains(trajectoryAction) || trajectoryAction.equals("ALL")){
+                    if(possibleActions.containsAll(trajectoryActionsSeparated) || trajectoryAction.equals("ALL")){
                         for(String action : possibleActions){
+                            
+                            if(!trajectoryActionsSeparated.contains(action) && !state.equals(world.getGoalLocation())){
+                                setStateActionEval(state, action, 1, dataVE.getNegativeContextIndex());
+                            }
 
                             // If the action is different from the one in the trajectory, promote the first context index
-                            if(!action.equals(trajectoryAction) && !trajectoryAction.equals("ALL")){
-                                setStateActionEval(state, action, 1, firstContextIndex);
-                            }else{
+                            /*if(!action.equals(trajectoryAction) && !trajectoryAction.equals("ALL")){
+                                if(!state.equals(world.getGoalLocation())){
+                                    setStateActionEval(state, action, 1, dataVE.getNegativeContextIndex());
+                                }
+                            }*/
+                            else{
                                 // If the possible action is the same as the trajectory action (or the action is "ALL"), check the successor state 
 
                                 for(String successorState : world.getPossibleResultingStates(state, action)){
@@ -315,13 +319,13 @@ public class EvaluationFactory {
                                     }
 
                                     // If the successor state matches the condition apply the following evaluations:
-                                    // The initial state promotes the second context index
-                                    // The state-action promotes the second context index
-                                    // The successor state is non applicable for the second context index
+                                    // The initial state promotes the positive context index
+                                    // The state-action promotes the positive context index
+                                    // The successor state is non applicable for the positive context index
                                     if((successorCounter == 4 && !trajectorySuccessorStateProfile.isLocation()) || (successorCounter == 1 && trajectorySuccessorStateProfile.isLocation())){
-                                        setStateEval(state, 1, secondContextIndex);
-                                        setStateActionEval(state, action, 1, secondContextIndex);
-                                        setStateEval(successorState, Integer.MAX_VALUE, secondContextIndex);
+                                        setStateEval(state, 1, dataVE.getPositiveContextIndex());
+                                        setStateActionEval(state, action, 1, dataVE.getPositiveContextIndex());
+                                        setStateEval(successorState, Integer.MAX_VALUE, dataVE.getPositiveContextIndex());
                                     }
                                 }
                             }

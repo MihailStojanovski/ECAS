@@ -1,15 +1,12 @@
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.plaf.nimbus.State;
 
 import valueIterationAlgorithms.PolicyExtractor;
 import valueIterationAlgorithms.ValueIteration;
@@ -37,6 +34,8 @@ public class Main {
         context.add(0);
         context.add(0);
 
+
+
         // ---------------------------------- DCT ----------------------------------
         System.out.println("---------------------------------- DCT ----------------------------------");
 
@@ -51,31 +50,91 @@ public class Main {
         profileListHazardousAndInconsiderate.add(hazardous);
         profileListHazardousAndInconsiderate.add(inconsiderate);
 
-        // Hazardous
-        // System.out.println("Hazardous DCT for task 1 : ");
+
+        BufferedWriter writerDCT;
+        try {
+            writerDCT = new BufferedWriter(new FileWriter("DCTresults.txt", true));
+            
+            // Hazardous
+            writerDCT.append("Hazardous \n");
+            writerDCT.append("Hazardous DCT for task 1: " + "\n");
+            parsedWorld.setStartLocation("SCHOOL");
+            parsedWorld.setGoalLocation("DINER");
+            showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor, writerDCT);
+
+            writerDCT.append("\n");
+
+            writerDCT.append("Hazardous DCT for task 2: " + "\n");
+            parsedWorld.setStartLocation("HOME");
+            parsedWorld.setGoalLocation("OFFICE");
+            showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor, writerDCT);
+
+            writerDCT.append("\n");
+
+            writerDCT.append("Hazardous DCT for task 3: " + "\n");
+            parsedWorld.setStartLocation("TOWN_HALL");
+            parsedWorld.setGoalLocation("PARK");
+            showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor, writerDCT);
+
+            writerDCT.append("\nHazardous & Inconsiderate");
+
+            // Hazardous and Inconsiderate
+
+            writerDCT.append("Hazardous & Inconsiderate DCT for task 1: " + "\n");
+            parsedWorld.setStartLocation("SCHOOL");
+            parsedWorld.setGoalLocation("DINER");
+            showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor, writerDCT);
+
+            writerDCT.append("\n");
+
+            writerDCT.append("Hazardous & Inconsiderate DCT for task 2: " + "\n");
+            parsedWorld.setStartLocation("HOME");
+            parsedWorld.setGoalLocation("OFFICE");
+            showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor, writerDCT);
+
+            writerDCT.append("\n");
+
+            writerDCT.append("Hazardous & Inconsiderate DCT for task 3: " + "\n");
+            parsedWorld.setStartLocation("TOWN_HALL");
+            parsedWorld.setGoalLocation("PARK");
+            showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor, writerDCT);
+
+            writerDCT.append("\n");
+
+            writerDCT.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+
+        // System.out.println("Hazardous DCT for task 1: ");
+        // parsedWorld.setStartLocation("SCHOOL");
         // parsedWorld.setGoalLocation("DINER");
         // showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor);
 
-        // System.out.println("Hazardous DCT for task 2 : ");
+        // System.out.println("Hazardous DCT for task 2: ");
+        // parsedWorld.setStartLocation("HOME");
         // parsedWorld.setGoalLocation("OFFICE");
         // showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor);
 
-        // System.out.println("Hazardous DCT for task 3 : ");
+        // System.out.println("Hazardous DCT for task 3: ");
+        // parsedWorld.setStartLocation("TOWN_HALL");
         // parsedWorld.setGoalLocation("PARK");
         // showLossDCT(context, profileListHazardous, parsedWorld, policyExtractor);
 
 
-        // Hazardous and Inconsiderate
-
-        // System.out.println("Hazardous & Inconsiderate DCT for task 1 : ");
+        // System.out.println("Hazardous & Inconsiderate DCT for task 1: ");
+        // parsedWorld.setStartLocation("SCHOOL");
         // parsedWorld.setGoalLocation("DINER");
         // showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor);
 
-        // System.out.println("Hazardous & Inconsiderate DCT for task 2 : ");
+        // System.out.println("Hazardous & Inconsiderate DCT for task 2: ");
+        // parsedWorld.setStartLocation("HOME");
         // parsedWorld.setGoalLocation("OFFICE");
         // showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor);
 
-        // System.out.println("Hazardous & Inconsiderate DCT for task 3 : ");
+        // System.out.println("Hazardous & Inconsiderate DCT for task 3: ");
+        // parsedWorld.setStartLocation("TOWN_HALL");
         // parsedWorld.setGoalLocation("PARK");
         // showLossDCT(context, profileListHazardousAndInconsiderate, parsedWorld, policyExtractor);
 
@@ -97,58 +156,179 @@ public class Main {
         carefulOperationDuty.put(carefulOperationState, carefulOperationAction);
         contextIndexToDuties.put(1,carefulOperationDuty);
 
+        BufferedWriter writerPFD;
+        try {
+            writerPFD = new BufferedWriter(new FileWriter("PFDresults.txt", true));
+            
+            writerPFD.append("0 tolerance PFD for task 1: " + "\n");
+            parsedWorld.setStartLocation("SCHOOL");
+            parsedWorld.setGoalLocation("DINER");
+            showLossPFD(context, contextIndexToDuties, parsedWorld, policyExtractor, writerPFD);
 
-        // System.out.println("0 tolerance PFD for task 1 : ");
-        // parsedWorld.setGoalLocation("DINER");
-        // showLossPFD(context, contextIndexToDuties, parsedWorld, policyExtractor);
+            writerPFD.append("\n");
 
-        // System.out.println("0 tolerance PFD for task 2 : ");
-        // parsedWorld.setGoalLocation("OFFICE");
-        // showLossPFD(context, contextIndexToDuties, parsedWorld, policyExtractor);
+            writerPFD.append("0 tolerance PFD for task 2: " + "\n");
+            parsedWorld.setStartLocation("HOME");
+            parsedWorld.setGoalLocation("OFFICE");
+            showLossPFD(context, contextIndexToDuties, parsedWorld, policyExtractor, writerPFD);
 
-        // System.out.println("0 tolerance PFD for task 3 : ");
-        // parsedWorld.setGoalLocation("PARK");
-        // showLossPFD(context, contextIndexToDuties, parsedWorld, policyExtractor);
+            writerPFD.append("\n");
+
+            writerPFD.append("0 tolerance PFD for task 3: " + "\n");
+            parsedWorld.setStartLocation("TOWN_HALL");
+            parsedWorld.setGoalLocation("PARK");
+            showLossPFD(context, contextIndexToDuties, parsedWorld, policyExtractor, writerPFD);
+
+
+            writerPFD.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
 
         // ---------------------------------- VE ----------------------------------
         System.out.println("---------------------------------- VE ----------------------------------");
 
-        List<Integer> contextVE = new ArrayList<>(Arrays.asList(0,1));
+        List<Integer> contextVElarge = new ArrayList<>(Arrays.asList(0,1,0,1,
+                                                                    0,1,0,1,
+                                                                    0,1,0,1,
+                                                                    0,1,0,1));
 
-        // MGT with location
 
-        // StateProfile trajectoryState = new StateProfile("ALL", "ALL", "ALL", "ALL");
-        // String trajectoryAction = "ALL";
-        // StateProfile trajectorySuccessorState = new StateProfile("TOWN_HALL", "ALL", "ALL", "ALL");
+        // AVOID HIGHWAY
 
-        StateProfile trajectoryState = new StateProfile("ALL", "ALL", "NONE", "LIGHT",false);
-        String trajectoryAction = "TO_NORMAL";
-        StateProfile trajectorySuccessorState = new StateProfile("ALL", "ALL", "NORMAL", "LIGHT",false);
+        StateProfile trajectoryStateP1 = new StateProfile("GAS_STATION", "ALL", "ALL", "ALL",true);
+        String trajectoryActionP1 = "TURN_ONTO_ROUTE_116 || TURN_ONTO_SERVICE_ROAD_REVERSED || TURN_ONTO_COLLEGE_STREET_REVERSED";
+        StateProfile trajectorySuccessorStateP1 = new StateProfile("ALL", "ALL", "ALL", "ALL",false);
+        VirtueEthicsData proactive1 = new VirtueEthicsData(0, 1, trajectoryStateP1, trajectoryActionP1, trajectorySuccessorStateP1);
+        
+        StateProfile trajectoryStateP5 = new StateProfile("OFFICE", "ALL", "ALL", "ALL",true);
+        String trajectoryActionP5 = "TURN_ONTO_ROUTE_9 || TURN_ONTO_OAK_ROAD_REVERSED";
+        StateProfile trajectorySuccessorStateP5 = new StateProfile("ALL", "ALL", "ALL", "ALL",false);
+        VirtueEthicsData proactive5 = new VirtueEthicsData(2, 3, trajectoryStateP5, trajectoryActionP5, trajectorySuccessorStateP5);
+        
+        
+        StateProfile trajectoryStateP9 = new StateProfile("HOME", "ALL", "ALL", "ALL",true);
+        String trajectoryActionP9 = "TURN_ONTO_GRAY_STREET";
+        StateProfile trajectorySuccessorStateP9 = new StateProfile("ALL", "ALL", "ALL", "ALL",false);
+        VirtueEthicsData proactive9 = new VirtueEthicsData(4, 5, trajectoryStateP9, trajectoryActionP9, trajectorySuccessorStateP9);
+        
+        
+        StateProfile trajectoryStateP11 = new StateProfile("TRAIN_STATION", "ALL", "ALL", "ALL",true);
+        String trajectoryActionP11 = "TURN_ONTO_GRAY_STREET_REVERSED || TURN_ONTO_MERRICK_ROAD || TURN_ONTO_SERVICE_ROAD";
+        StateProfile trajectorySuccessorStateP11 = new StateProfile("ALL", "ALL", "ALL", "ALL",false);
+        VirtueEthicsData proactive11 = new VirtueEthicsData(6, 7, trajectoryStateP11, trajectoryActionP11, trajectorySuccessorStateP11);
+        
+        StateProfile trajectoryStateP15 = new StateProfile("CAFE", "ALL", "ALL", "ALL",true);
+        String trajectoryActionP15 = "TURN_ONTO_MAIN_STREET";
+        StateProfile trajectorySuccessorStateP15 = new StateProfile("ALL", "ALL", "ALL", "ALL",false);
+        VirtueEthicsData proactive15 = new VirtueEthicsData(8, 9, trajectoryStateP15, trajectoryActionP15, trajectorySuccessorStateP15);
 
-        VirtueEthicsData cautious_1 = new VirtueEthicsData(0, 1, trajectoryState, trajectoryAction, trajectorySuccessorState,true);
+        StateProfile trajectoryStateP16 = new StateProfile("SCHOOL", "ALL", "ALL", "ALL",true);
+        String trajectoryActionP16 = "TURN_ONTO_MATOON_STREET || TURN_ONTO_TRIANGLE_STREET || TURN_ONTO_ASTOR_DRIVE";
+        StateProfile trajectorySuccessorStateP16 = new StateProfile("ALL", "ALL", "ALL", "ALL",false);
+        VirtueEthicsData proactive16 = new VirtueEthicsData(10, 11, trajectoryStateP16, trajectoryActionP16, trajectorySuccessorStateP16);
 
-        StateProfile trajectoryStateC2 = new StateProfile("ALL", "ALL", "NONE", "HEAVY",false);
-        String trajectoryActionC2 = "TO_LOW";
-        StateProfile trajectorySuccessorStateC2 = new StateProfile("ALL", "ALL", "LOW", "HEAVY",false);
 
-        VirtueEthicsData cautious_2 = new VirtueEthicsData(2, 3, trajectoryStateC2, trajectoryActionC2, trajectorySuccessorStateC2,true);
+        // Cautious, light -> to normal, heavy -> to low
 
-        StateProfile trajectoryStateP = new StateProfile("ALL", "ALL", "ALL", "ALL",true);
-        String trajectoryActionP = "ALL";
-        StateProfile trajectorySuccessorStateP = new StateProfile("ALL", "HIGHWAY", "ALL", "ALL",false);
-        VirtueEthicsData proactive = new VirtueEthicsData(0, 1, trajectoryStateP, trajectoryActionP, trajectorySuccessorStateP,false);
+        StateProfile trajectoryStateC1Large = new StateProfile("ALL", "ALL", "NONE", "LIGHT",false);
+        String trajectoryActionC1Large = "TO_NORMAL";
+        StateProfile trajectorySuccessorStateC1Large = new StateProfile("ALL", "ALL", "NORMAL", "LIGHT",false);
 
+        VirtueEthicsData cautious_1Large = new VirtueEthicsData(12, 13, trajectoryStateC1Large, trajectoryActionC1Large, trajectorySuccessorStateC1Large);
+
+        StateProfile trajectoryStateC2Large = new StateProfile("ALL", "ALL", "NONE", "HEAVY",false);
+        String trajectoryActionC2Large = "TO_LOW";
+        StateProfile trajectorySuccessorStateC2Large = new StateProfile("ALL", "ALL", "LOW", "HEAVY",false);
+
+        VirtueEthicsData cautious_2Large = new VirtueEthicsData(14, 15, trajectoryStateC2Large, trajectoryActionC2Large, trajectorySuccessorStateC2Large);
+
+        
 
         // Check the context before executing
-        List<VirtueEthicsData> dataListVE = new ArrayList<>(Arrays.asList(proactive));
+        List<VirtueEthicsData> dataListVElarge = new ArrayList<>(Arrays.asList(proactive1 ,proactive5, proactive9, proactive11, proactive15, proactive16, cautious_1Large, cautious_2Large));
 
-        System.out.println("VE for task 1 : ");
-        parsedWorld.setGoalLocation("OFFICE");
-        showLossVE(contextVE, dataListVE, parsedWorld, policyExtractor);
+
+
+        List<Integer> contextVEsmall = new ArrayList<>(Arrays.asList(0,1,0,1));
+
+        StateProfile trajectoryStateC1Small = new StateProfile("ALL", "ALL", "NONE", "LIGHT",false);
+        String trajectoryActionC1Small = "TO_NORMAL";
+        StateProfile trajectorySuccessorStateC1Small = new StateProfile("ALL", "ALL", "NORMAL", "LIGHT",false);
+
+        VirtueEthicsData cautious_1Small = new VirtueEthicsData(0, 1, trajectoryStateC1Small, trajectoryActionC1Small, trajectorySuccessorStateC1Small);
+
+        StateProfile trajectoryStateC2Small = new StateProfile("ALL", "ALL", "NONE", "HEAVY",false);
+        String trajectoryActionC2Small = "TO_LOW";
+        StateProfile trajectorySuccessorStateC2Small = new StateProfile("ALL", "ALL", "LOW", "HEAVY",false);
+
+        VirtueEthicsData cautious_2Small = new VirtueEthicsData(2, 3, trajectoryStateC2Small, trajectoryActionC2Small, trajectorySuccessorStateC2Small);
+        List<VirtueEthicsData> dataListVEsmall = new ArrayList<>(Arrays.asList(cautious_1Small, cautious_2Small));
+
+
+
+        BufferedWriter writerVE;
+        try {
+            writerVE = new BufferedWriter(new FileWriter("VEresults.txt", true));
+            
+            // Small
+            writerVE.append("Small VE trajectory list \n");
+            writerVE.append("Small VE trajectory list for task 1: " + "\n");
+            parsedWorld.setStartLocation("SCHOOL");
+            parsedWorld.setGoalLocation("DINER");
+            showLossVE(contextVEsmall, dataListVEsmall, parsedWorld, policyExtractor, writerVE);
+
+            writerVE.append("\n");
+
+            writerVE.append("Small VE trajectory list for task 2: " + "\n");
+            parsedWorld.setStartLocation("HOME");
+            parsedWorld.setGoalLocation("OFFICE");
+            showLossVE(contextVEsmall, dataListVEsmall, parsedWorld, policyExtractor, writerVE);
+
+            writerVE.append("\n");
+
+            writerVE.append("Small VE trajectory list for task 3: " + "\n");
+            parsedWorld.setStartLocation("TOWN_HALL");
+            parsedWorld.setGoalLocation("PARK");
+            showLossVE(contextVEsmall, dataListVEsmall, parsedWorld, policyExtractor, writerVE);
+
+            writerVE.append("\nLarge VE trajectory list");
+
+            // Large
+
+            writerVE.append("Large VE trajectory list for task 1: " + "\n");
+            parsedWorld.setStartLocation("SCHOOL");
+            parsedWorld.setGoalLocation("DINER");
+            showLossVE(contextVElarge, dataListVElarge, parsedWorld, policyExtractor, writerVE);
+
+            writerVE.append("\n");
+
+            writerVE.append("Large VE trajectory list for task 2: " + "\n");
+            parsedWorld.setStartLocation("HOME");
+            parsedWorld.setGoalLocation("OFFICE");
+            showLossVE(contextVElarge, dataListVElarge, parsedWorld, policyExtractor, writerVE);
+
+            writerVE.append("\n");
+
+            writerVE.append("Large VE trajectory list for task 3: " + "\n");
+            parsedWorld.setStartLocation("TOWN_HALL");
+            parsedWorld.setGoalLocation("PARK");
+            showLossVE(contextVElarge, dataListVElarge, parsedWorld, policyExtractor, writerVE);
+
+            writerVE.append("\n");
+
+            writerVE.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         
     }
 
-    public static void showLossDCT(List<Integer> context, List<StateProfile> profileList, SelfDrivingCarWorld parsedWorld, PolicyExtractor policyExtractor){
+    public static void showLossDCT(List<Integer> context, List<StateProfile> profileList, SelfDrivingCarWorld parsedWorld, PolicyExtractor policyExtractor, BufferedWriter writerDCT){
         
         // Evaluation factory setup
         EvaluationFactory evaluationFactoryDCT = new EvaluationFactory(context, parsedWorld);
@@ -172,7 +352,6 @@ public class Main {
         Map<String, Map<String, Double>> qTaskDCT = valueIterationDCT.getqTask();
 
         Map<String, List<String>> genericExtractionTarget = parsedWorld.getMapOfStatesAndActions();
-        
 
         Map<String, List<String>> policyHarmDCT = policyExtractor.minimizingExtractor(genericExtractionTarget, qHarmDCT);
 
@@ -183,40 +362,48 @@ public class Main {
         Map<String, Double> vTaskDCT = valueIterationDCT.calculateAndReturnVforPolicy(policyTaskDCT);
         Map<String, Double> vHarmDCT = valueIterationDCT.calculateAndReturnVforPolicy(policyHarmTaskDCT);
 
-        // System.out.println("[TASK]");
-        // for(Map.Entry<String, List<String>> e : policyTaskDCT.entrySet()){
-        //     System.out.println(e);
-        // }
-
-        // System.out.println("[HARM+TASK]");
-        // for(Map.Entry<String, List<String>> e : policyHarmTaskDCT.entrySet()){
-        //     System.out.println(e);
-        // }
-
         Double maxDiffDCT = -Double.MAX_VALUE;
         String diffStateDCT = "";
         for(String state : parsedWorld.getAllStateKeys()){
-            // System.out.println("State : " + state + " vHarm : " + vHarm.get(state) + " vTask : " + vTask.get(state));
             if(maxDiffDCT < vHarmDCT.get(state) - vTaskDCT.get(state)){
                 maxDiffDCT = vHarmDCT.get(state) - vTaskDCT.get(state);
                 diffStateDCT = state;
             }
         }
-        System.out.println("vTask[" + diffStateDCT +"] : " + vTaskDCT.get(diffStateDCT) + "; vHarm["+ diffStateDCT + "] : " + vHarmDCT.get(diffStateDCT));
-        System.out.println("Difference : " + maxDiffDCT + " ; in the state : " + diffStateDCT);
 
-        Double lossDCT = (maxDiffDCT / vTaskDCT.get(diffStateDCT)) * 100;
-        System.out.println("Loss % : " + lossDCT);
 
-        System.out.println("vTask[SCHOOL] : " + vTaskDCT.get("SCHOOL") + ", vHarm[SCHOOL] : " + vHarmDCT.get("SCHOOL"));
-        Double dif = vHarmDCT.get("SCHOOL") - vTaskDCT.get("SCHOOL");
-        System.out.println((dif / vTaskDCT.get("SCHOOL")) * 100);
+        try {
+            writerDCT.append("Most difference in state: TASK[" + diffStateDCT +"]= " + vTaskDCT.get(diffStateDCT) + "; HARM["+ diffStateDCT + "]= " + vHarmDCT.get(diffStateDCT) + "\n");
 
-        System.out.println("Iteration: " + valueIterationDCT.getCounter());
+            writerDCT.append("Highest difference value: " + maxDiffDCT + "\n");
+
+            Double lossDCT = (maxDiffDCT / vTaskDCT.get(diffStateDCT)) * 100;
+            writerDCT.append("Highest loss: " + lossDCT + "%\n");
+    
+            writerDCT.append("Values at start location: TASK[" + parsedWorld.getStartLocation() + "]=" + vTaskDCT.get(parsedWorld.getStartLocation()) + "; HARM["+parsedWorld.getStartLocation()+"]="+vHarmDCT.get(parsedWorld.getStartLocation()) + "\n");
+            Double dif = vHarmDCT.get(parsedWorld.getStartLocation()) - vTaskDCT.get(parsedWorld.getStartLocation());
+            writerDCT.append("Difference at start location:" + dif + "\n");
+            Double lossAtStart = (dif / vTaskDCT.get(parsedWorld.getStartLocation())) * 100;
+            writerDCT.append("Loss at start location: " + lossAtStart + "%\n");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // System.out.println("Difference : " + maxDiffDCT + " ; in the state : " + diffStateDCT);
+
+        // Double lossDCT = (maxDiffDCT / vTaskDCT.get(diffStateDCT)) * 100;
+        // System.out.println("Loss % : " + lossDCT);
+
+        // System.out.println("vTask[SCHOOL] : " + vTaskDCT.get("SCHOOL") + ", vHarm[SCHOOL] : " + vHarmDCT.get("SCHOOL"));
+        // Double dif = vHarmDCT.get("SCHOOL") - vTaskDCT.get("SCHOOL");
+        // System.out.println((dif / vTaskDCT.get("SCHOOL")) * 100);
+
+        // System.out.println("Iteration: " + valueIterationDCT.getCounter());
 
     }
 
-    public static void showLossPFD(List<Integer> context, Map<Integer, Map<StateProfile, String>> contextToDuties, SelfDrivingCarWorld parsedWorld, PolicyExtractor policyExtractor){
+    public static void showLossPFD(List<Integer> context, Map<Integer, Map<StateProfile, String>> contextToDuties, SelfDrivingCarWorld parsedWorld, PolicyExtractor policyExtractor, BufferedWriter writerPFD){
         
         EvaluationFactory evaluationFactoryPFD = new EvaluationFactory(context, parsedWorld);
 
@@ -250,7 +437,6 @@ public class Main {
         Double maxDiffPFD = -Double.MAX_VALUE;
         String diffStatePFD = "";
         for(String state : parsedWorld.getAllStateKeys()){
-            // System.out.println("State : " + state + " vHarm : " + vHarm.get(state) + " vTask : " + vTask.get(state));
             if(maxDiffPFD < vHarmPFD.get(state) - vTaskPFD.get(state)){
                 maxDiffPFD = vHarmPFD.get(state) - vTaskPFD.get(state);
                 diffStatePFD = state;
@@ -258,19 +444,37 @@ public class Main {
         }
 
 
-        System.out.println("vTask[" + diffStatePFD +"] : " + vTaskPFD.get(diffStatePFD) + "; vHarm["+ diffStatePFD + "] : " + vHarmPFD.get(diffStatePFD));
-        System.out.println("Difference : " + maxDiffPFD + " ; in the state : " + diffStatePFD);
+        try {
+            writerPFD.append("Most difference in state: TASK[" + diffStatePFD +"]= " + vTaskPFD.get(diffStatePFD) + "; HARM["+ diffStatePFD + "]= " + vHarmPFD.get(diffStatePFD) + "\n");
 
-        Double lossPFD = (maxDiffPFD / vTaskPFD.get(diffStatePFD)) * 100;
-        System.out.println("Loss % : " + lossPFD);
+            writerPFD.append("Highest difference value: " + maxDiffPFD + "\n");
 
-        System.out.println("vTask[HOME] : " + vTaskPFD.get("HOME") + ", vHarm[HOME] : " + vHarmPFD.get("HOME"));
+            Double lossPFD = (maxDiffPFD / vTaskPFD.get(diffStatePFD)) * 100;
+            writerPFD.append("Highest loss: " + lossPFD + "%\n");
+    
+            writerPFD.append("Values at start location: TASK[" + parsedWorld.getStartLocation() + "]=" + vTaskPFD.get(parsedWorld.getStartLocation()) + "; HARM["+parsedWorld.getStartLocation()+"]="+vHarmPFD.get(parsedWorld.getStartLocation()) + "\n");
+            Double dif = vHarmPFD.get(parsedWorld.getStartLocation()) - vTaskPFD.get(parsedWorld.getStartLocation());
+            writerPFD.append("Difference at start location: " + dif + "\n");
+            Double lossAtStart = (dif / vTaskPFD.get(parsedWorld.getStartLocation())) * 100;
+            writerPFD.append("Loss at start location: " + lossAtStart + "%\n");
 
-        System.out.println("Iteration: " + valueIterationPFD.getCounter());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        // System.out.println("vTask[" + diffStatePFD +"] : " + vTaskPFD.get(diffStatePFD) + "; vHarm["+ diffStatePFD + "] : " + vHarmPFD.get(diffStatePFD));
+        // System.out.println("Difference : " + maxDiffPFD + " ; in the state : " + diffStatePFD);
+
+        // Double lossPFD = (maxDiffPFD / vTaskPFD.get(diffStatePFD)) * 100;
+        // System.out.println("Loss % : " + lossPFD);
+
+        // System.out.println("vTask[HOME] : " + vTaskPFD.get("HOME") + ", vHarm[HOME] : " + vHarmPFD.get("HOME"));
+
 
     }
 
-    public static void showLossVE(List<Integer> context, List<VirtueEthicsData> dataListVE, SelfDrivingCarWorld parsedWorld, PolicyExtractor policyExtractor){
+    public static void showLossVE(List<Integer> context, List<VirtueEthicsData> dataListVE, SelfDrivingCarWorld parsedWorld, PolicyExtractor policyExtractor, BufferedWriter writerVE){
         
         EvaluationFactory evaluationFactoryVE = new EvaluationFactory(context, parsedWorld);
 
@@ -278,48 +482,48 @@ public class Main {
         Map<Integer,Map<String,Map<String,Integer>>> stateActionEvalVE = evaluationFactoryVE.getStateActionEval();
         Map<Integer,Map<String,Integer>> stateEvalVE = evaluationFactoryVE.getStateEval();
 
-        BufferedWriter writer;
-        try {
-            writer = new BufferedWriter(new FileWriter("outputStateAction.txt", false));
+        // BufferedWriter writer;
+        // try {
+        //     writer = new BufferedWriter(new FileWriter("outputStateAction.txt", false));
         
-            for(Map.Entry<Integer,Map<String,Map<String,Integer>>> hasContextEnrty : stateActionEvalVE.entrySet()){
-                writer.append("CONTEXT: " + hasContextEnrty.getKey() + "{\n");
-                Map<String,Map<String,Integer>> hasStateMap = hasContextEnrty.getValue();
-                for(Map.Entry<String,Map<String,Integer>> hasStateEntry : hasStateMap.entrySet()){
-                    writer.append("STATE: " + hasStateEntry.getKey() + " {\n ");
-                    Map<String,Integer> hasActionMap = hasStateEntry.getValue();
-                    for(Map.Entry<String,Integer> hasActionEntry : hasActionMap.entrySet()){
-                        writer.append("ACTION: " + hasActionEntry.getKey() + ", WORTH: " + hasActionEntry.getValue() + "\n");
-                    }
-                    writer.append("END STATE: " + hasStateEntry.getKey() + " }\n ");
-                }
-                writer.append("END CONTEXT: " + hasContextEnrty.getKey() + "}\n");
-            }
+        //     for(Map.Entry<Integer,Map<String,Map<String,Integer>>> hasContextEnrty : stateActionEvalVE.entrySet()){
+        //         writer.append("CONTEXT: " + hasContextEnrty.getKey() + "{\n");
+        //         Map<String,Map<String,Integer>> hasStateMap = hasContextEnrty.getValue();
+        //         for(Map.Entry<String,Map<String,Integer>> hasStateEntry : hasStateMap.entrySet()){
+        //             writer.append("STATE: " + hasStateEntry.getKey() + " {\n ");
+        //             Map<String,Integer> hasActionMap = hasStateEntry.getValue();
+        //             for(Map.Entry<String,Integer> hasActionEntry : hasActionMap.entrySet()){
+        //                 writer.append("ACTION: " + hasActionEntry.getKey() + ", WORTH: " + hasActionEntry.getValue() + "\n");
+        //             }
+        //             writer.append("END STATE: " + hasStateEntry.getKey() + " }\n ");
+        //         }
+        //         writer.append("END CONTEXT: " + hasContextEnrty.getKey() + "}\n");
+        //     }
 
 
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //     writer.close();
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
 
-        BufferedWriter writer2;
-        try {
-            writer2 = new BufferedWriter(new FileWriter("outputState.txt", false));
+        // BufferedWriter writer2;
+        // try {
+        //     writer2 = new BufferedWriter(new FileWriter("outputState.txt", false));
         
-            for(Map.Entry<Integer,Map<String,Integer>> hasContextEnrty : stateEvalVE.entrySet()){
-                writer2.append("CONTEXT: " + hasContextEnrty.getKey() + "{\n");
-                Map<String,Integer> hasStateMap = hasContextEnrty.getValue();
-                for(Map.Entry<String,Integer> hasStateEntry : hasStateMap.entrySet()){
-                    writer2.append("STATE: " + hasStateEntry.getKey() + " , WORTH: " + hasStateEntry.getValue() + "\n");
-                }
-                writer2.append("END CONTEXT: " + hasContextEnrty.getKey() + "}\n");
-            }
+        //     for(Map.Entry<Integer,Map<String,Integer>> hasContextEnrty : stateEvalVE.entrySet()){
+        //         writer2.append("CONTEXT: " + hasContextEnrty.getKey() + "{\n");
+        //         Map<String,Integer> hasStateMap = hasContextEnrty.getValue();
+        //         for(Map.Entry<String,Integer> hasStateEntry : hasStateMap.entrySet()){
+        //             writer2.append("STATE: " + hasStateEntry.getKey() + " , WORTH: " + hasStateEntry.getValue() + "\n");
+        //         }
+        //         writer2.append("END CONTEXT: " + hasContextEnrty.getKey() + "}\n");
+        //     }
 
 
-            writer2.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //     writer2.close();
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
             
 
 
@@ -337,35 +541,40 @@ public class Main {
         Map<String, Map<String, Double>> qGoodVE = valueIterationVE.getqGood();
         Map<String, Map<String, Double>> qTaskVE = valueIterationVE.getqTask();
 
-        for(Map.Entry<String, Map<String,Double>> e : qHarmVE.entrySet()){
-            if(e.getKey().equals("GAS_STATION")){
-                System.out.println(e);
+        // System.out.println("qHarmVE[GAS_STATION] = " + qHarmVE.get("GAS_STATION"));
 
-            }
-            
-        }
 
         Map<String, List<String>> genericExtractionTarget = parsedWorld.getMapOfStatesAndActions();
 
         Map<String, List<String>> policyHarmVE = policyExtractor.minimizingExtractor(genericExtractionTarget, qHarmVE);
-        // Policy print
-        for(Map.Entry<String, List<String>> e : policyHarmVE.entrySet()){
-            if(e.getKey().equals("GAS_STATION")){
-                System.out.println(e);
-            }
-        }
+
+        // for(Map.Entry<String, List<String>> e2: policyHarmVE.entrySet()){
+        //     if(e2.getKey().equals("GAS_STATION")){
+        //         System.out.print("policyHarmVE: ");
+        //         System.out.println(e2);
+        //     }
+        // }
 
         Map<String, List<String>> policyHarmGoodVE = policyExtractor.maximizingExtractor(policyHarmVE, qGoodVE);
 
-        // Policy print
-        // for(Map.Entry<String, List<String>> e : policyHarmGoodVE.entrySet()){
-        //     System.out.println(e);
+        // for(Map.Entry<String, List<String>> e3: policyHarmGoodVE.entrySet()){
+        //     if(e3.getKey().equals("GAS_STATION")){
+        //         System.out.print("policyHarmGoodVE: ");
+        //         System.out.println(e3);
+        //     }
         // }
         
         Map<String, List<String>> policyHarmGoodTaskVE = policyExtractor.minimizingExtractor(policyHarmGoodVE, qTaskVE);
         
 
         Map<String, List<String>> policyTaskVE = policyExtractor.minimizingExtractor(genericExtractionTarget, qTaskVE); 
+
+        // for(Map.Entry<String, List<String>> e4 : policyHarmGoodTaskVE.entrySet()){
+
+        //         System.out.println(e4);
+            
+        // }
+        
         
         Map<String, Double> vTaskVE = valueIterationVE.calculateAndReturnVforPolicy(policyTaskVE);
         Map<String, Double> vEthicsVE = valueIterationVE.calculateAndReturnVforPolicy(policyHarmGoodTaskVE);
@@ -373,8 +582,8 @@ public class Main {
 
         Double maxDiffVE = -Double.MAX_VALUE;
         String diffStateVE = "";
+
         for(String state : parsedWorld.getAllStateKeys()){
-            // System.out.println("State : " + state + " vHarm : " + vHarm.get(state) + " vTask : " + vTask.get(state));
             if(maxDiffVE < vEthicsVE.get(state) - vTaskVE.get(state)){
                 maxDiffVE = vEthicsVE.get(state) - vTaskVE.get(state);
                 diffStateVE = state;
@@ -382,13 +591,31 @@ public class Main {
         }
 
 
-        System.out.println("Most difference in state: Task[" + diffStateVE +"] : " + vTaskVE.get(diffStateVE) + "; VE["+ diffStateVE + "] : " + vEthicsVE.get(diffStateVE));
-        System.out.println("Difference : " + maxDiffVE + " ; in the state : " + diffStateVE);
+        try {
+            writerVE.append("Most difference in state: TASK[" + diffStateVE +"]= " + vTaskVE.get(diffStateVE) + "; ETHICS["+ diffStateVE + "]= " + vEthicsVE.get(diffStateVE) + "\n");
 
-        Double lossVE = (maxDiffVE / vTaskVE.get(diffStateVE)) * 100;
-        System.out.println("Loss % : " + lossVE);
+            writerVE.append("Highest difference value: " + maxDiffVE + "\n");
 
-        System.out.println("vTask[HOME] : " + vTaskVE.get("HOME") + ", vHarm[HOME] : " + vEthicsVE.get("HOME"));
+            Double lossVE = (maxDiffVE / vTaskVE.get(diffStateVE)) * 100;
+            writerVE.append("Highest loss: " + lossVE + "%\n");
+    
+            writerVE.append("Values at start location: TASK[" + parsedWorld.getStartLocation() + "]=" + vTaskVE.get(parsedWorld.getStartLocation()) + "; HARM["+parsedWorld.getStartLocation()+"]="+vEthicsVE.get(parsedWorld.getStartLocation()) + "\n");
+            Double dif = vEthicsVE.get(parsedWorld.getStartLocation()) - vTaskVE.get(parsedWorld.getStartLocation());
+            writerVE.append("Difference at start location: " + dif + "\n");
+            Double lossAtStart = (dif / vTaskVE.get(parsedWorld.getStartLocation())) * 100;
+            writerVE.append("Loss at start location: " + lossAtStart + "%\n");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // System.out.println("Most difference in state: Task[" + diffStateVE +"] : " + vTaskVE.get(diffStateVE) + "; VE["+ diffStateVE + "] : " + vEthicsVE.get(diffStateVE));
+        // System.out.println("Difference : " + maxDiffVE + " ; in the state : " + diffStateVE);
+
+        // Double lossVE = (maxDiffVE / vTaskVE.get(diffStateVE)) * 100;
+        // System.out.println("Loss % : " + lossVE);
+
+        // System.out.println("vTask[HOME] : " + vTaskVE.get("HOME") + ", vHarm[HOME] : " + vEthicsVE.get("HOME"));
 
 
     }
