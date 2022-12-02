@@ -28,6 +28,18 @@ public class StateRegistry {
         return speedAdjustment;
     }
 
+    public void setPedestrianTraffic(String pedestrianTraffic) {
+        this.pedestrianTraffic = pedestrianTraffic;
+    }
+
+    public void setSpeedAdjustment(String speedAdjustment) {
+        this.speedAdjustment = speedAdjustment;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+    
     @Override
     public String toString() {
         if(state instanceof Location){

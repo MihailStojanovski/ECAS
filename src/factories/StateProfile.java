@@ -8,6 +8,12 @@ public class StateProfile {
     private String pedestrianTraffic;
 
 
+    public StateProfile(String name, String type, String speedAdjustment, String pedestrianTraffic){
+        this.name = name;
+        this.type = type;
+        this.speedAdjustment = speedAdjustment;
+        this.pedestrianTraffic = pedestrianTraffic;
+    }
 
     public StateProfile(String name, String type, String speedAdjustment, String pedestrianTraffic, boolean isLocation){
         this.name = name;

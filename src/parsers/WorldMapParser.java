@@ -7,13 +7,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
   
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
 
 import states.Location;
 import states.Road;
-import states.State;
 import worlds.SelfDrivingCarWorld;
 
 public class WorldMapParser {

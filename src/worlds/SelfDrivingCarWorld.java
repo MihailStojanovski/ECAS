@@ -33,6 +33,8 @@ public class SelfDrivingCarWorld {
     private List<String> locationActions = new ArrayList<>();
     private List<String> roadActions = new ArrayList<>();
     private List<String> allActions;
+    private Map<String, Map<String, List<String>>> transitions;
+    private Map<String, Map<String, String>> inversedTransitions;
 
     public SelfDrivingCarWorld(List<Location> locations, List<Road> roads){
         this.locations = locations;
@@ -103,6 +105,10 @@ public class SelfDrivingCarWorld {
         allActions = new ArrayList<>(locationActions);
         allActions.addAll(roadActions);
 
+
+        // Creating transitions
+        // createTransitions();
+
     }// End Set up variables
 
 
@@ -134,15 +140,32 @@ public class SelfDrivingCarWorld {
         return possibleActions;
     }
 
-    /**
-    * The getPossibleResultingStates function returns a set of possible resulting states from the given state and action.
-    *
-    * 
-    * @param state The state in which the action is chosen.
-    * @param action The action.
-    * @return A set of possible resulting states given a state and an action.
-    * 
-    */
+    public Set<String> getPrecedingActionsForSuccessor(String successor){
+        Set<String> precedingActions = new HashSet<>();
+        if(roadStrings.contains(successor)){
+            StateRegistry roadStateReg = getRegistryFromStateKey(successor);
+            if(roadStateReg.getSpeedAdjustment().equals("NONE")){
+                StringBuilder builder = new StringBuilder();
+                builder.append("TURN_ONTO_");
+                builder.append(roadStateReg.getState().getName());
+                precedingActions.add(builder.toString());
+                builder.setLength(0);
+            }else{
+                for(Map.Entry<String, String> accelerateEntry : accelerateActions.entrySet()){
+                    if(roadStateReg.getSpeedAdjustment().equals(accelerateEntry.getValue())){
+                        precedingActions.add(accelerateEntry.getKey());
+                    }
+                }
+            }
+        }
+        if(locationStrings.contains(successor)){
+            precedingActions.add("CRUISE");
+        }
+
+        return precedingActions;
+    }
+
+
     public Set<String> getPossibleResultingStates(String state, String action){
         Set<String> possibleResultStates = new HashSet<>();
         StringBuilder builder = new StringBuilder();
@@ -182,6 +205,46 @@ public class SelfDrivingCarWorld {
         return possibleResultStates;
     }
 
+    public Set<String> getPrecedingStatesForSuccessor(String successor, String action){
+        Set<String> precedingStates = new HashSet<>();
+        StringBuilder builder = new StringBuilder();
+        if(locationStrings.contains(successor)){
+            if(action.equals("CRUISE")){
+                List<String> speedList = new ArrayList<>(Arrays.asList("LOW", "NORMAL","HIGH"));
+                List<String> pedestrianList = new ArrayList<>(Arrays.asList("LIGHT","HEAVY"));
+                for(Road r : roads){
+                    if(r.getToLocation().equals(successor)){
+                        for(String speedEntry : speedList){
+                            for(String pTrafficEntry : pedestrianList){
+                                StateRegistry tempSR = new StateRegistry(r, speedEntry, pTrafficEntry);
+                                precedingStates.add(tempSR.toString());
+                            }
+                        }
+                    }
+                }
+                    
+                
+            }
+        }else if(roadStrings.contains(successor)){
+            StateRegistry roadReg = getRegistryFromStateKey(successor);
+            if(roadReg.getSpeedAdjustment().equals("NONE")){
+                builder.append("TURN_ONTO_");
+                builder.append(roadReg.getState().getName());
+                if(action.equals(builder.toString())){
+                    precedingStates.add(((Road)roadReg.getState()).getFromLocation());
+                }
+                builder.setLength(0);
+            }else{
+                if(accelerateActions.keySet().contains(action)){
+                    roadReg = new StateRegistry(roadReg.getState(), "NONE", roadReg.getPedestrianTraffic());
+                    precedingStates.add(roadReg.toString());
+                }
+            }
+        }
+
+        return precedingStates;
+    }
+
     public Map<String, List<String>> getMapOfStatesAndActions(){
         Map<String, List<String>> map = new HashMap<>();
         for(String state : getAllStateKeys()){
@@ -192,6 +255,31 @@ public class SelfDrivingCarWorld {
             map.put(state, actions);
         }
         return map;
+    }
+
+
+
+    private void createTransitions(){
+
+        for(String state : getAllStateKeys()){
+            Map<String, List<String>> actionSuccessorsMap = new HashMap<>();
+            for(String action : getPossibleActionsForState(state)){
+                List<String> successorList = new ArrayList<>();
+                for(String successorState : getPossibleResultingStates(state, action)){
+                    successorList.add(successorState);
+                }
+                actionSuccessorsMap.put(action, successorList);
+            }
+            transitions.put(state, actionSuccessorsMap);
+        }
+    }
+
+    public Map<String, Map<String, String>> getInversedTransitions(){
+        return inversedTransitions;
+    }
+
+    public Map<String, Map<String, List<String>>> getTransitions(){
+        return transitions;
     }
 
     public List<String> getAllStateKeys(){

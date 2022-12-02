@@ -3,6 +3,7 @@ package factories;
 import java.util.List;
 import java.util.Map;
 
+import states.Location;
 import states.Road;
 import states.StateRegistry;
 
@@ -23,15 +24,23 @@ public class EvaluationFactory {
     // The moral evaluation of a state with the integer representing the associated moral value
     private Map<Integer,Map<String,Integer>> stateEval;
 
+
+    //      Context Index -> State   -> Action    -> List of ( Successor -> Evaluation )       
+    // private Map<Integer, Map<String, Map<String, List<Map<String, Integer>>>>>  transitionEval;
+    private Map<Integer, Map<String, Map<String, Map<String, Integer>>>>  transitionEval;
+
+
     private SelfDrivingCarWorld world;
 
 
     public EvaluationFactory(List<Integer> context, SelfDrivingCarWorld world){
         this.context = context;
         this.world = world;
-        this.stateActionEval = new HashMap<>();
+        // this.stateActionEval = new HashMap<>();
         this.stateEval = new HashMap<>();
+        this.transitionEval = new HashMap<>();
     }
+
 
     public void fillUpStateEvalWith(Integer evalValue){
         for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
@@ -78,52 +87,147 @@ public class EvaluationFactory {
         stateActionEval.put(contextValueIndex, stateActionEvalTemp);
     }
 
+    private void fillTransitionEvalWith(Integer evalValue){
+
+        for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
+
+            Map<String, Map<String, Map<String, Integer>>> transitionEvalState = new HashMap<>();
+            for(String state : world.getAllStateKeys()){
+                Map<String, Map<String, Integer>> transitionEvalAction = new HashMap<>();
+                for(String action : world.getPossibleActionsForState(state)){
+                    Map<String, Integer> successorToEvalMap = new HashMap<>();
+                    for(String successor : world.getPossibleResultingStates(state, action)){
+                        successorToEvalMap.put(successor, evalValue);
+                    }
+                    transitionEvalAction.put(action, successorToEvalMap);
+                }
+                transitionEvalState.put(state, transitionEvalAction);
+            }
+            transitionEval.put(contextValueIndex, transitionEvalState);
+        }
+    }
+
+    private void fillTransitionEvalForContextIndexWith(Integer evalValue, Integer contextIndex){
+            Map<String, Map<String, Map<String, Integer>>> transitionEvalState = new HashMap<>();
+            for(String state : world.getAllStateKeys()){
+                Map<String, Map<String, Integer>> transitionEvalAction = new HashMap<>();
+                for(String action : world.getPossibleActionsForState(state)){
+                    Map<String, Integer> successorToEvalMap = new HashMap<>();
+                    for(String successor : world.getPossibleResultingStates(state, action)){
+                        successorToEvalMap.put(successor, evalValue);
+                    }
+                    transitionEvalAction.put(action, successorToEvalMap);
+                }
+                transitionEvalState.put(state, transitionEvalAction);
+            }
+            transitionEval.put(contextIndex, transitionEvalState);
+    }
+
+    public Map<Integer, Map<String, Map<String, Map<String, Integer>>>> getTransitionEvalsWithEvaluationValue(Integer evalValue){
+
+        Map<Integer, Map<String, Map<String, Map<String, Integer>>>> tEval = new HashMap<>();
+        for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
+
+            Map<String, Map<String, Map<String, Integer>>> transitionEvalState = new HashMap<>();
+            for(String state : world.getAllStateKeys()){
+                Map<String, Map<String, Integer>> transitionEvalAction = new HashMap<>();
+                for(String action : world.getPossibleActionsForState(state)){
+                    Map<String, Integer> successorToEvalMap = new HashMap<>();
+                    for(String successor : world.getPossibleResultingStates(state, action)){
+                        successorToEvalMap.put(successor, evalValue);
+                    }
+                    transitionEvalAction.put(action, successorToEvalMap);
+                }
+                transitionEvalState.put(state, transitionEvalAction);
+            }
+            tEval.put(contextValueIndex, transitionEvalState);
+        }
+
+        return tEval;
+    }
+
     // ------------------------------ Start DCT ------------------------------
 
-    public void createDCTevals(List<StateProfile> profileList){
 
-        fillUpStateActionEvalWith(Integer.MAX_VALUE);
-        fillUpStateEvalWith(0);
+    public void createDCTevals(Map<Integer, StateProfile> forbidden){
 
-        for(StateProfile p : profileList){
-            List<String> allStates = world.getAllStateKeys();
-            for(String state : allStates){
+        fillTransitionEvalWith(Integer.MAX_VALUE);
 
-                int forbidCounter = 0;
+
+        for(Map.Entry<Integer, StateProfile> forbiddenEntry : forbidden.entrySet()){
+
+            Integer contextValueIndex = forbiddenEntry.getKey();
+            StateProfile profile = forbiddenEntry.getValue();
+
+            // Iterate over the states and check if a state is a forbidden one
+            for(String state : world.getAllStateKeys()){
+
+                // If the state is forbidden, set the transitions towards that state as promoting harm
+                // and check if a successor of that state is not forbidden
+                if(isForbidden(profile, state)){
+                    for(String precedingAction : world.getPrecedingActionsForSuccessor(state)){
+                        for(String precedingState : world.getPrecedingStatesForSuccessor(state, precedingAction)){
+
+                            // System.out.println("state " + precedingState + " action " + precedingAction + " successor " + state);
+                            this.setTransitionEval(precedingState, precedingAction, state, 1, contextValueIndex);
+
+                        }
+                    }
+                    for(Map.Entry<Integer, StateProfile> successiveForbiddenEntry : forbidden.entrySet()){
+                        Integer successiveContextValueIndex = successiveForbiddenEntry.getKey();
+                        StateProfile successiveProfile = successiveForbiddenEntry.getValue();
+
+
+
+                        for(String successiveAction : world.getPossibleActionsForState(state)){
+                            for(String successiveState : world.getPossibleResultingStates(state, successiveAction)){
+                                if(!isForbidden(successiveProfile, successiveState)){
+                                    // System.out.println("state " + state + " action " + successiveAction + " successor " + successiveState);
+                                    this.setTransitionEval(state, successiveAction, successiveState, 0, successiveContextValueIndex);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isForbidden(StateProfile profile, String state){
+        int forbidCounter = 0;
                 StateRegistry reg = world.getRegistryFromStateKey(state);
                 
-                if(p.getName().equals("ALL")){
+                if(profile.getName().equals("ALL")){
                     forbidCounter++;
-                }else if(p.getName().equals(reg.getState().getName())){
+                }else if(profile.getName().equals(reg.getState().getName())){
                     forbidCounter++;
                 }
                 
                 if(reg.getState() instanceof Road){
 
-                    if(p.getType().equals("ALL")){
+                    if(profile.getType().equals("ALL")){
                         forbidCounter++;
-                    }else if(p.getType().equals(((Road)reg.getState()).getType())){
-                        forbidCounter++;
-                    }
-
-                    if(p.getSpeedAdjustment().equals("ALL")){
-                        forbidCounter++;
-                    }else if(p.getSpeedAdjustment().equals(reg.getSpeedAdjustment())){
+                    }else if(profile.getType().equals(((Road)reg.getState()).getType())){
                         forbidCounter++;
                     }
 
-                    if(p.getPedestrianTraffic().equals("ALL")){
+                    if(profile.getSpeedAdjustment().equals("ALL")){
                         forbidCounter++;
-                    }else if(p.getPedestrianTraffic().equals(reg.getPedestrianTraffic())){
+                    }else if(profile.getSpeedAdjustment().equals(reg.getSpeedAdjustment())){
+                        forbidCounter++;
+                    }
+
+                    if(profile.getPedestrianTraffic().equals("ALL")){
+                        forbidCounter++;
+                    }else if(profile.getPedestrianTraffic().equals(reg.getPedestrianTraffic())){
                         forbidCounter++;
                     }
                 }
 
-                if(forbidCounter == 4){
-                    setStateEval(state, 1, profileList.indexOf(p));
+                if((!profile.isLocation() && forbidCounter == 4) || (profile.isLocation() && forbidCounter == 1)){
+                    return true;
                 }
-            }
-        }
+                return false;
     }
 
     // ------------------------------- End DCT -------------------------------
@@ -133,8 +237,7 @@ public class EvaluationFactory {
     // Context Index -> State Profile in which the duty is applied -> action which fulfills the duty
 
     public void createPFDevals(Map<Integer,Map<StateProfile,String>> contextToDuties){
-        fillUpStateActionEvalWith(Integer.MAX_VALUE);
-        fillUpStateEvalWith(Integer.MAX_VALUE);
+        fillTransitionEvalWith(Integer.MAX_VALUE);
 
         for(Map.Entry<Integer,Map<StateProfile,String>> entry : contextToDuties.entrySet()){
 
@@ -144,8 +247,7 @@ public class EvaluationFactory {
                 
                 StateProfile stateProfile = d.getKey();
                 String dutyAction = d.getValue();
-                List<String> allStates = world.getAllStateKeys();
-                for(String state : allStates){
+                for(String state : world.getAllStateKeys()){
 
                     int neglectCounter = 0;
                     StateRegistry reg = world.getRegistryFromStateKey(state);
@@ -187,14 +289,16 @@ public class EvaluationFactory {
                     
                     List<String> possibleActions = new LinkedList<>(world.getPossibleActionsForState(state));
                     if(possibleActions.containsAll(dutyActionsSeparated)){
-                        // If the action is different from the actions given by the duties, they will be promoting the negative associated value of the context
+                        // If the action is different from the actions given by the duties, promote the associated negative value of the context
                         for(String action : possibleActions){
                             int actionNeglectCounter = neglectCounter;
                             if(!dutyActionsSeparated.contains(action)){
                                 actionNeglectCounter++;
                             }
-                            if((actionNeglectCounter > 4 && (reg.getState() instanceof Road)) || (actionNeglectCounter > 1 && !(reg.getState() instanceof Road))){
-                                    setStateActionEval(state, action, 1, contextValueIndex);
+                            if((actionNeglectCounter > 4 && !stateProfile.isLocation()) || (actionNeglectCounter > 1 && stateProfile.isLocation())){
+                                    for(String successor : world.getPossibleResultingStates(state, action)){
+                                        setTransitionEval(state, action, successor, 1, contextValueIndex);
+                                    }
                             }
                         }
                     }
@@ -210,16 +314,14 @@ public class EvaluationFactory {
     // ------------------------------- Start VE ------------------------------
 
     public void createVEevals(List<VirtueEthicsData> dataListVE){
-
+    
         for(VirtueEthicsData dataVE : dataListVE){
 
             // All states and state-action pairs are not applicable for the first context index
-            fillUpStateActionEvalWith(Integer.MAX_VALUE, dataVE.getNegativeContextIndex());
-            fillUpStateEvalWith(Integer.MAX_VALUE, dataVE.getNegativeContextIndex());
+            fillTransitionEvalForContextIndexWith(Integer.MAX_VALUE, dataVE.getNegativeContextIndex());
 
             // All states and state-action pairs demote for the second context index
-            fillUpStateActionEvalWith(0, dataVE.getPositiveContextIndex());
-            fillUpStateEvalWith(0, dataVE.getPositiveContextIndex());
+            fillTransitionEvalForContextIndexWith(0, dataVE.getPositiveContextIndex());
 
             StateProfile trajectoryStateProfile = dataVE.getTrajectoryStateProfile();
             String trajectoryAction = dataVE.getTrajectoryAction();
@@ -256,9 +358,14 @@ public class EvaluationFactory {
                         counter++;
                     }
                 }
-
-                // Check if the state matches the given condition
+                // Check if the state corresponds to the starting state of the described trajectory
                 if((counter == 4 && !trajectoryStateProfile.isLocation()) || (counter == 1 && trajectoryStateProfile.isLocation())){
+                    // If the state is a start of a positive trajectory all the transitions that lead to that state promote the associated positive context value
+                    for(String precedingAction : world.getPrecedingActionsForSuccessor(state)){
+                        for(String precedingState : world.getPrecedingStatesForSuccessor(state, precedingAction)){
+                            setTransitionEval(precedingState, precedingAction, state, 1, dataVE.getPositiveContextIndex());
+                        }
+                    }
 
                     List<String> trajectoryActionsSeparated = new LinkedList<>();
                     if(trajectoryAction.contains("||")){
@@ -272,16 +379,12 @@ public class EvaluationFactory {
                     if(possibleActions.containsAll(trajectoryActionsSeparated) || trajectoryAction.equals("ALL")){
                         for(String action : possibleActions){
                             
+                            // If possible action is not contained in the trajectory actions, the transition promotes the negative associated value
                             if(!trajectoryActionsSeparated.contains(action) && !state.equals(world.getGoalLocation())){
-                                setStateActionEval(state, action, 1, dataVE.getNegativeContextIndex());
-                            }
-
-                            // If the action is different from the one in the trajectory, promote the first context index
-                            /*if(!action.equals(trajectoryAction) && !trajectoryAction.equals("ALL")){
-                                if(!state.equals(world.getGoalLocation())){
-                                    setStateActionEval(state, action, 1, dataVE.getNegativeContextIndex());
+                                for(String successorState : world.getPossibleResultingStates(state, action)){
+                                    setTransitionEval(state, action, successorState, 1, dataVE.getNegativeContextIndex());
                                 }
-                            }*/
+                            }
                             else{
                                 // If the possible action is the same as the trajectory action (or the action is "ALL"), check the successor state 
 
@@ -318,163 +421,22 @@ public class EvaluationFactory {
                                         }
                                     }
 
-                                    // If the successor state matches the condition apply the following evaluations:
-                                    // The initial state promotes the positive context index
-                                    // The state-action promotes the positive context index
-                                    // The successor state is non applicable for the positive context index
+                                    // If the successor state matches the trajectory successor state, the transition promotes the positive context value
                                     if((successorCounter == 4 && !trajectorySuccessorStateProfile.isLocation()) || (successorCounter == 1 && trajectorySuccessorStateProfile.isLocation())){
-                                        setStateEval(state, 1, dataVE.getPositiveContextIndex());
-                                        setStateActionEval(state, action, 1, dataVE.getPositiveContextIndex());
-                                        setStateEval(successorState, Integer.MAX_VALUE, dataVE.getPositiveContextIndex());
+                                        setTransitionEval(state, action, successorState, 1, dataVE.getPositiveContextIndex());
                                     }
                                 }
                             }
                         }
                     }
+
                 }
             }
+
         }
 
 
     }
-
-
-    // OLD
-    /*public void createPostiveVEevals(List<VirtueEthicsData> dataListVE){
-
-        for(VirtueEthicsData dataVE : dataListVE ){
-            // All states and state-action pairs demote the positive value of the context
-            fillUpStateActionEvalWith(0, dataVE.getPositiveContextIndex());
-            fillUpStateEvalWith(0, dataVE.getPositiveContextIndex());
-
-            // All states and state-action pairs are not applicable for the negative value of the context
-            fillUpStateActionEvalWith(Integer.MAX_VALUE, dataVE.getNegativeContextIndex());
-            fillUpStateEvalWith(Integer.MAX_VALUE, dataVE.getNegativeContextIndex());
-
-
-            StateProfile trajectoryState = dataVE.getTrajectoryStateProfile();
-            String trajectoryAction = dataVE.getTrajectoryAction();
-            StateProfile trajectorySuccessorState = dataVE.getTrajectorySuccessorStateProfile();
-    
-            for(String state : world.getAllStateKeys()){
-
-                int counter = 0;
-                StateRegistry reg = world.getRegistryFromStateKey(state);
-                
-                if(trajectoryState.getName().equals("ALL")){
-                    counter++;
-                }else if(trajectoryState.getName().equals(reg.getState().getName())){
-                    counter++;
-                }
-                
-                if(reg.getState() instanceof Road){
-
-                    if(trajectoryState.getType().equals("ALL")){
-                        counter++;
-                    }else if(trajectoryState.getType().equals(((Road)reg.getState()).getType())){
-                        counter++;
-                    }
-
-                    if(trajectoryState.getSpeedAdjustment().equals("ALL")){
-                        counter++;
-                    }else if(trajectoryState.getSpeedAdjustment().equals(reg.getSpeedAdjustment())){
-                        counter++;
-                    }
-
-                    if(trajectoryState.getPedestrianTraffic().equals("ALL")){
-                        counter++;
-                    }else if(trajectoryState.getPedestrianTraffic().equals(reg.getPedestrianTraffic())){
-                        counter++;
-                    }
-                }
-
-                // If the state matches the given condition, the evaluation promotes the positive context value
-                if((counter == 4 && (reg.getState() instanceof Road)) || (counter == 1 && !(reg.getState() instanceof Road))){
-                    
-                
-
-                    // Highway trap
-                    
-                    // if((reg.getState() instanceof Road)){
-                    //     if(((Road)reg.getState()).getType().equals("HIGHWAY")){
-                    //         System.out.println("HIGHWAY");
-                    //     }
-                    // }
-
-                    List<String> possibleActions = new LinkedList<>(world.getPossibleActionsForState(state));
-                    if(possibleActions.contains(trajectoryAction) || trajectoryAction.equals("ALL")){
-                        // If the action is different from the action given by the trajectory, it will promote the negative associated value of the context
-                        for(String action : possibleActions){
-                            
-                            int actionNeglectCounter = counter;
-                            if(!action.equals(trajectoryAction) && !trajectoryAction.equals("ALL")){
-                                
-                                actionNeglectCounter++;
-                            }else{
-                                // If the possible action is the same as the trajectory action, promote the positive value associated with that trajectory
-
-                                
-
-                                for(String successorState : world.getPossibleResultingStates(state, action)){
-                                    // When the action is part of the trajectory, find the successor state in the trajectory and set the evaluation for the positive context value as not applicable (inf)
-                                    // if(successorState.contains(trajectorySuccessorState.getName())){
-                                    //     setStateEval(successorState, Integer.MAX_VALUE, dataVE.getPositiveContextIndex());
-                                    // }
-
-                                    // New added
-
-                                    int successorCounter = 0;
-                                    StateRegistry successorReg = world.getRegistryFromStateKey(successorState);
-                                    
-                                    if(trajectorySuccessorState.getName().equals("ALL")){
-                                        successorCounter++;
-                                    }else if(trajectorySuccessorState.getName().equals(successorReg.getState().getName())){
-                                        successorCounter++;
-                                    }
-                                    
-                                    if(successorReg.getState() instanceof Road){
-
-                                        if(trajectorySuccessorState.getType().equals("ALL")){
-                                            successorCounter++;
-                                        }else if(trajectorySuccessorState.getType().equals(((Road)successorReg.getState()).getType())){
-                                            successorCounter++;
-                                        }
-
-                                        if(trajectorySuccessorState.getSpeedAdjustment().equals("ALL")){
-                                            successorCounter++;
-                                        }else if(trajectorySuccessorState.getSpeedAdjustment().equals(successorReg.getSpeedAdjustment())){
-                                            successorCounter++;
-                                        }
-
-                                        if(trajectorySuccessorState.getPedestrianTraffic().equals("ALL")){
-                                            successorCounter++;
-                                        }else if(trajectorySuccessorState.getPedestrianTraffic().equals(successorReg.getPedestrianTraffic())){
-                                            successorCounter++;
-                                        }
-                                    }
-
-                                    // If the state matches the given condition, the evaluation promotes the positive context value
-                                    if((successorCounter == 4 && (successorReg.getState() instanceof Road)) || (successorCounter == 1 && !(successorReg.getState() instanceof Road))){
-                                        setStateEval(state, 1, dataVE.getPositiveContextIndex());
-                                        setStateActionEval(state, action, 1, dataVE.getPositiveContextIndex());
-                                        setStateEval(successorState, Integer.MAX_VALUE, dataVE.getPositiveContextIndex());
-                                    }
-
-                                }
-
-                            }
-                            if((actionNeglectCounter > 4 && (reg.getState() instanceof Road)) || (actionNeglectCounter > 1 && !(reg.getState() instanceof Road))){
-                                    setStateActionEval(state, action, 1, dataVE.getNegativeContextIndex());
-                            }
-                        }
-                    }
-                }
-                
-            }
-         }
-
-    }
-    */
 
     // ------------------------------- End VE --------------------------------
 
@@ -486,11 +448,20 @@ public class EvaluationFactory {
         stateActionEval.get(contextValueIndex).get(state).replace(action, evaluation);
     }
 
+    public void setTransitionEval(String state, String action, String successor, Integer evaluation, Integer contextValueIndex){
+
+        transitionEval.get(contextValueIndex).get(state).get(action).put(successor, evaluation);
+    }
+
     public Map<Integer,Map<String,Integer>> getStateEval(){
         return stateEval;
     }
 
     public Map<Integer, Map<String, Map<String, Integer>>> getStateActionEval() {
         return stateActionEval;
+    }
+
+    public Map<Integer, Map<String, Map<String, Map<String, Integer>>>> getTransitionEval() {
+        return transitionEval;
     }
 }
