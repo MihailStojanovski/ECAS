@@ -97,7 +97,7 @@ public class RewardCalculator{
         // }
         try {
             return transitionEval.get(contextValueIndex).get(state).get(action).get(successorState);
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             throw new IllegalArgumentException("Successor state [" + successorState + "] missing");
         }
 

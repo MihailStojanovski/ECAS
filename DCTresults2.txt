@@ -23,7 +23,8 @@ Values at start location: TASK[TOWN_HALL]=1511.3939479506282; HARM[TOWN_HALL]=18
 Difference at start location:352.1140331500135
 Loss at start location: 23.2973033686857%
 
-Hazardous & InconsiderateHazardous & Inconsiderate DCT for task 1: 
+Hazardous & Inconsiderate
+Hazardous & Inconsiderate DCT for task 1: 
 Most difference in state: TASK[TRIANGLE_STREET_REVERSED_CITY_NONE_HEAVY]= 1942.7541028798187; HARM[TRIANGLE_STREET_REVERSED_CITY_NONE_HEAVY]= 3185.26887574511
 Highest difference value: 1242.5147728652914
 Highest loss: 63.95635819394047%
