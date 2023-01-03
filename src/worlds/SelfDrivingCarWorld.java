@@ -105,10 +105,6 @@ public class SelfDrivingCarWorld {
         allActions = new ArrayList<>(locationActions);
         allActions.addAll(roadActions);
 
-
-        // Creating transitions
-        // createTransitions();
-
     }// End Set up variables
 
 
@@ -160,6 +156,7 @@ public class SelfDrivingCarWorld {
         }
         if(locationStrings.contains(successor)){
             precedingActions.add("CRUISE");
+            precedingActions.add("STAY");
         }
 
         return precedingActions;
@@ -255,23 +252,6 @@ public class SelfDrivingCarWorld {
             map.put(state, actions);
         }
         return map;
-    }
-
-
-
-    private void createTransitions(){
-
-        for(String state : getAllStateKeys()){
-            Map<String, List<String>> actionSuccessorsMap = new HashMap<>();
-            for(String action : getPossibleActionsForState(state)){
-                List<String> successorList = new ArrayList<>();
-                for(String successorState : getPossibleResultingStates(state, action)){
-                    successorList.add(successorState);
-                }
-                actionSuccessorsMap.put(action, successorList);
-            }
-            transitions.put(state, actionSuccessorsMap);
-        }
     }
 
     public Map<String, Map<String, String>> getInversedTransitions(){

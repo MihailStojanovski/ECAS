@@ -59,8 +59,8 @@ public class ValueIteration {
         }
 
         // Setting the goal state and action STAY to -Card(S) and Card(S) respectively for harm and good
-        qHarm.get(world.getGoalLocation()).replace("STAY", -Double.valueOf(world.getAllStateKeys().size()));
-        qGood.get(world.getGoalLocation()).replace("STAY", Double.valueOf(world.getAllStateKeys().size()));
+        // qHarm.get(world.getGoalLocation()).replace("STAY", -Double.valueOf(world.getAllStateKeys().size()));
+        // qGood.get(world.getGoalLocation()).replace("STAY", Double.valueOf(world.getAllStateKeys().size()));
 
         Double convHarm = Double.MAX_VALUE;
         Double convGood = Double.MAX_VALUE;

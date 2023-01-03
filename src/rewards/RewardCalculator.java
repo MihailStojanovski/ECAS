@@ -20,14 +20,8 @@ public class RewardCalculator{
     // The context with the moral values
     private List<Integer> context;
     
-    
-    // The first map represents the context value that the evaluation is associated with
-    // The second map has a state as a key,the map in the value has an action as a key and the evaluation of the state-action pair as a value
-
-    // private Map<Integer,Map<String,Map<String,Integer>>> stateActionEval; 
-
     // The moral evaluation of a state with the integer representing the associated moral value
-    private Map<Integer,Map<String,Integer>> stateEval;
+    // private Map<Integer,Map<String,Integer>> stateEval;
 
     //      Context Index -> State   -> Action    -> List of ( Successor -> Evaluation )       
     private Map<Integer, Map<String, Map<String, Map<String, Integer>>>>  transitionEval;
@@ -37,18 +31,13 @@ public class RewardCalculator{
 
     public RewardCalculator(List<Integer> context, Map<Integer, Map<String, Map<String, Map<String, Integer>>>>  transitionEval, SelfDrivingCarWorld world) {
         this.context = context;
-        // this.stateActionEval = stateActionEval;
         this.transitionEval = transitionEval;
         this.world = world;
-        stateEval = new HashMap<>();
-        calculateAllStateEvals();
-
 
     }
 
+    /*
     private void calculateAllStateEvals(){
-
-
         for(int contextValueIndex = 0; contextValueIndex < context.size(); contextValueIndex++){
             Map<String, Integer> tempEval = new HashMap<>();
             for(String successorBeingEvaluated : world.getAllStateKeys()){
@@ -68,10 +57,12 @@ public class RewardCalculator{
                 
 
                 if(transitionCtr == promotingCtr){
-                    tempEval.put(successorBeingEvaluated,1);
+                    // tempEval.put(successorBeingEvaluated,1);
+                    tempEval.put(successorBeingEvaluated,Integer.MAX_VALUE);
 
                 }else if(transitionCtr == demotingCtr){
-                    tempEval.put(successorBeingEvaluated,0);
+                    // tempEval.put(successorBeingEvaluated,0);
+                    tempEval.put(successorBeingEvaluated,Integer.MAX_VALUE);
 
                 }else{
                     tempEval.put(successorBeingEvaluated,Integer.MAX_VALUE);
@@ -83,18 +74,10 @@ public class RewardCalculator{
         }
 
     }
+    */
 
     private Integer getTransitionEval(String state, String action, String successorState, int contextValueIndex){
-        // Integer evalSA = stateActionEval.get(ctxValueIndex).get(state).get(action);
-        // Integer evalSPrime = stateEval.get(ctxValueIndex).get(successorState);
-        // return Math.min(evalSA,evalSPrime);
-        // List<Map<String, Integer>> tempList = new ArrayList<>();
-        // tempList =  this.transitionEval.get(contextValueIndex).get(state).get(action);
-        // for(Map<String, Integer> successorEvalMap : tempList){
-        //     if(successorEvalMap.containsKey(successorState)){
-        //         return successorEvalMap.get(successorState);
-        //     }
-        // }
+
         try {
             return transitionEval.get(contextValueIndex).get(state).get(action).get(successorState);
         } catch (NullPointerException e) {
@@ -103,7 +86,6 @@ public class RewardCalculator{
 
         
     }
-    // End new
 
     public EthicalRewardQuad getEthicalReward(String state, String action, String successorState) {
 
@@ -111,19 +93,19 @@ public class RewardCalculator{
         for(int i = 0; i < context.size(); i++){
             // Context value is morally bad
             if(context.get(i) == 0){
-                if(getTransitionEval(state, action, successorState, i) == 1 && stateEval.get(i).get(state) != 1){
+                if(getTransitionEval(state, action, successorState, i) == 1){
                     quad.incrementNabla();
                 }
-                else if(getTransitionEval(state, action, successorState, i) == 0 && stateEval.get(i).get(state) == 1){
+                else if(getTransitionEval(state, action, successorState, i) == 0){
                     quad.incrementBarredNabla();
                 }
             }
             // Context value is morally good
             else if(context.get(i) == 1){
-                if(getTransitionEval(state, action, successorState, i) == 1 && stateEval.get(i).get(state) != 1){
+                if(getTransitionEval(state, action, successorState, i) == 1){
                     quad.incrementTriangle();
                 }
-                else if(getTransitionEval(state, action, successorState, i) == 0 && stateEval.get(i).get(state) == 1){
+                else if(getTransitionEval(state, action, successorState, i) == 0){
                     quad.incrementBarredTriangle();
                 }
             } 
@@ -173,8 +155,8 @@ public class RewardCalculator{
         return driverErrorPenalty;
     }
 
-    public Map<Integer, Map<String, Integer>> getStateEval() {
-        return stateEval;
-    }
+    // public Map<Integer, Map<String, Integer>> getStateEval() {
+    //     return stateEval;
+    // }
 
 }
